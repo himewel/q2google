@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "q2google"
+version = "0.0.1"
+description = "Sync GoPro cloud media to Google Photos (library + future Google integrations)."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "aiohttp~=3.11.11",
+    "aiofiles~=25.1.0",
+    "google-auth-oauthlib~=1.3.0",
+    "gopro-api~=0.0.7",
+    "pydantic>=2",
+    "pydantic-settings>=2",
+    "typer>=0.12",
+]
+
+[project.scripts]
+q2google = "q2google.cli:app"
+
+[dependency-groups]
+dev = [
+    "coverage>=7",
+    "pytest>=8",
+    "pytest-asyncio>=1",
+    "pytest-cov>=6",
+    "ruff>=0.8",
+    "taskipy>=1",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 150
+
+[tool.ruff.lint]
+ignore = ["E402", "F403", "F405"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-p no:warnings"
+asyncio_mode = "auto"
+
+[tool.taskipy.tasks]
+lint = "uv run ruff check . && uv run ruff format --check ."
+format = "uv run ruff check . --fix --select I && uv run ruff format ."
+test = "uv run pytest tests -vv -x -s --cov=q2google"
+cov = "uv run coverage html"
+all = "task lint && task format && task test && task cov"
+
+[tool.coverage.run]
+source = ["q2google"]
+omit = ["tests/*"]
