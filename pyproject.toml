@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "q2google"
 version = "0.0.1"
-description = "Sync GoPro cloud media to Google Photos (library + future Google integrations)."
+description = "Sync GoPro cloud media to Google Photos Library."
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [

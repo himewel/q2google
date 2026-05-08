@@ -17,8 +17,6 @@ q2google moves assets from **GoPro cloud** (`gopro-api` / `AsyncGoProClient`) in
 | `q2google/state/base.py` | `SessionState`, `ItemState`, `SyncStateBackend` protocol — persistence contract. |
 | `q2google/state/local.py` | `JsonFileBackend` — one JSON file per session under a root directory. |
 
-Future Google products (e.g. Drive) can add sibling packages such as `q2google/gdrive/` next to `gphotos/`.
-
 ## Sync pipeline (`sync_date_range`)
 
 ``sync_date_range`` requires a configured ``state_backend`` and a ``session_id``. The run is split into **discovery**, **transfer**, and **create** stages. State is loaded/saved through ``SyncStateBackend.load`` / ``save`` on ``SessionState`` (JSON-serializable via ``to_dict`` / ``from_dict``). That matches a **Firestore**-backed implementation in Cloud Functions: each invocation loads the document, advances one stage, saves.
@@ -62,10 +60,6 @@ class FirestoreBackend:
 ```
 
 `SessionState.to_dict()` is suitable for a Firestore document. No changes to `GoProToPhotosSync` are required.
-
-## Repo boundary
-
-**This repository** ships the library and CLI only. **Cloud Functions**, Pub/Sub wiring, Terraform/Pulumi, and a `FirestoreBackend` implementation belong in a **separate** repo (e.g. `q2google-cloud`) that declares `q2google` as a dependency.
 
 ## Documentation conventions
 
