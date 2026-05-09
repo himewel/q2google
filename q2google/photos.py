@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Protocol, Sequence
 
 import aiofiles
+
 from q2google.config import PHOTOS_LIBRARY_BATCH_MAX
 from q2google.gphotos.api import GooglePhotosAPI
 from q2google.gphotos.auth import GooglePhotosOAuth

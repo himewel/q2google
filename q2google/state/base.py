@@ -263,7 +263,7 @@ def new_session(
 
 
 class SyncStateBackend(Protocol):
-    """Storage backend for :class:`SessionState` (filesystem, Firestore, etc.)."""
+    """Storage backend for :class:`SessionState`."""
 
     def load(self, session_id: str) -> SessionState | None:
         """Load a session by id.

@@ -1,6 +1,6 @@
 # q2google
 
-Sync media from **GoPro cloud** into **Google Photos** for a capture date range using **resumable session state** on disk (JSON) via ``SyncStateBackend``. Swap ``JsonFileBackend`` for Firestore or another document store when deploying to cloud.
+Sync media from **GoPro cloud** into **Google Photos** for a capture date range using **resumable session state** on disk (JSON) via ``SyncStateBackend``.
 
 ## Requirements
 

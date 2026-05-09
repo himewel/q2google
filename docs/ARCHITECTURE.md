@@ -19,7 +19,7 @@ q2google moves assets from **GoPro cloud** (`gopro-api` / `AsyncGoProClient`) in
 
 ## Sync pipeline (`sync_date_range`)
 
-``sync_date_range`` requires a configured ``state_backend`` and a ``session_id``. The run is split into **discovery**, **transfer**, and **create** stages. State is loaded/saved through ``SyncStateBackend.load`` / ``save`` on ``SessionState`` (JSON-serializable via ``to_dict`` / ``from_dict``). That matches a **Firestore**-backed implementation in Cloud Functions: each invocation loads the document, advances one stage, saves.
+``sync_date_range`` requires a configured ``state_backend`` and a ``session_id``. The run is split into **discovery**, **transfer**, and **create** stages. State is loaded/saved through ``SyncStateBackend.load`` / ``save`` on ``SessionState`` (JSON-serializable via ``to_dict`` / ``from_dict``).
 
 ```mermaid
 sequenceDiagram
@@ -51,7 +51,7 @@ Implement the protocol:
 ```python
 from q2google import SessionState, SyncStateBackend
 
-class FirestoreBackend:
+class CustomBackend:
     def load(self, session_id: str) -> SessionState | None:
         ...
 
@@ -59,7 +59,7 @@ class FirestoreBackend:
         ...
 ```
 
-`SessionState.to_dict()` is suitable for a Firestore document. No changes to `GoProToPhotosSync` are required.
+`SessionState.to_dict()` / `from_dict()` produce a plain dict suitable for any document store. No changes to `GoProToPhotosSync` are required.
 
 ## Documentation conventions
 

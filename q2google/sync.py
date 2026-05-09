@@ -21,11 +21,11 @@ from q2google.config import (
     Q2GoogleSettings,
     get_settings,
 )
+from q2google.metrics import SyncTransferMetrics
 from q2google.photos import (
     GooglePhotosClient,
     MediaItemBatchCreateResponse,
 )
-from q2google.metrics import SyncTransferMetrics
 from q2google.stages import CreateStage, DiscoveryStage, TransferStage
 from q2google.state.base import SessionState, StageKey, SyncStateBackend, new_session
 

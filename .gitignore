@@ -6,3 +6,4 @@ token.json
 .pytest_cache/
 .ruff_cache/
 .q2google_sessions/
+.coverage/
