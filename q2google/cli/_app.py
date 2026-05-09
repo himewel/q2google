@@ -47,12 +47,12 @@ def _parse_iso_datetime(value: str) -> datetime:
 def sync_command(
     start_date: str = typer.Option(
         ...,
-        "--start-date",
+        "--start",
         help="Capture window start (ISO date or datetime, e.g. 2026-01-08).",
     ),
     end_date: str = typer.Option(
         ...,
-        "--end-date",
+        "--end",
         help="Capture window end (ISO date or datetime, e.g. 2026-01-09).",
     ),
     credentials: Path | None = typer.Option(
