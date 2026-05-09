@@ -1,28 +1,162 @@
 # q2google
 
-Sync media from **GoPro cloud** into **Google Photos** for a capture date range using **resumable session state** on disk (JSON) via ``SyncStateBackend``.
+Sync media from **GoPro cloud** into **Google Photos** for a capture date range with **resumable session state** on disk (JSON) via `SyncStateBackend`.
 
 ## Requirements
 
 - Python **3.12 or 3.13** (3.14 is excluded until dependent wheels catch up)
-- [uv](https://docs.astral.sh/uv/) for installs and tasks
+- **`GP_ACCESS_TOKEN`** environment variable — GoPro cloud access token (required by `AsyncGoProClient`)
 - Google OAuth **installed app** credentials (`client_secret.json` from Google Cloud Console)
 - A writable path for the user token (`token.json` by default)
 
-## Install (development)
-
-From the repository root:
+## Install
 
 ```bash
-uv sync
+pip install q2google
 ```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add q2google
+```
+
+## Library usage
+
+### Minimal example
+
+```python
+import asyncio
+from datetime import datetime
+
+from gopro_api import AsyncGoProClient
+
+from q2google import (
+    GoProToPhotosSync,
+    GooglePhotosClient,
+    GooglePhotosOAuth,
+    JsonFileBackend,
+)
+from q2google.gphotos.api import GooglePhotosAPI
+from q2google.gphotos.models import PhotosScopes
+
+
+async def main() -> None:
+    oauth = GooglePhotosOAuth(
+        client_secrets_file="client_secret.json",
+        scopes=[PhotosScopes.READ_AND_APPEND],
+        token_file="token.json",
+    )
+
+    async with (
+        AsyncGoProClient() as gopro,
+        GooglePhotosAPI(credentials=oauth) as api,
+    ):
+        photos = GooglePhotosClient(api=api)
+        backend = JsonFileBackend(root_dir=".q2google_sessions")
+
+        syncer = GoProToPhotosSync(
+            gopro=gopro,
+            photos=photos,
+            state_backend=backend,
+        )
+
+        responses = await syncer.sync_date_range(
+            start_date=datetime(2026, 1, 8),
+            end_date=datetime(2026, 1, 9),
+            session_id="my-session",
+        )
+        print(f"Created {len(responses)} batch(es).")
+
+
+asyncio.run(main())
+```
+
+### Resuming a session
+
+Pass the same `session_id` on subsequent runs. `GoProToPhotosSync` loads the persisted `SessionState` and skips already-completed items:
+
+```python
+responses = await syncer.sync_date_range(
+    start_date=datetime(2026, 1, 8),  # ignored when resuming
+    end_date=datetime(2026, 1, 9),    # ignored when resuming
+    session_id="my-session",          # same key → resumes from checkpoint
+)
+```
+
+### Custom state backend
+
+Implement `SyncStateBackend` to persist sessions in any storage layer (database, object store, etc.):
+
+```python
+from q2google import SessionState, SyncStateBackend
+
+
+class RedisBackend:
+    def load(self, session_id: str) -> SessionState | None:
+        raw = redis_client.get(session_id)
+        return SessionState.from_dict(json.loads(raw)) if raw else None
+
+    def save(self, state: SessionState) -> None:
+        redis_client.set(state.session_id, json.dumps(state.to_dict()))
+```
+
+Pass it directly to `GoProToPhotosSync(state_backend=RedisBackend())`. No other changes required.
+
+### Stage completion hook
+
+`on_stage_complete` is called after each of the three pipeline stages (discovery, transfer, create). Use it to report progress, emit metrics, or trigger side-effects:
+
+```python
+from q2google.state.base import SessionState, StageKey
+from q2google.photos import MediaItemBatchCreateResponse
+
+
+async def report(
+    stage: StageKey,
+    state: SessionState,
+    responses: list[MediaItemBatchCreateResponse] | None,
+) -> None:
+    print(f"[{stage}] items={len(state.items)} stage_states={state.stages}")
+
+
+responses = await syncer.sync_date_range(
+    start_date=datetime(2026, 1, 8),
+    end_date=datetime(2026, 1, 9),
+    session_id="my-session",
+    on_stage_complete=report,
+)
+```
+
+### Public API
+
+All public symbols are importable directly from `q2google`:
+
+| Symbol | Description |
+|--------|-------------|
+| `GoProToPhotosSync` | Main orchestrator; runs discovery → transfer → create. |
+| `GooglePhotosClient` | Resumable upload facade (`upload_file_path`, `create_media_items`). |
+| `GooglePhotosOAuth` | Load, refresh, or obtain Google OAuth credentials. |
+| `JsonFileBackend` | File-based `SyncStateBackend`; one JSON per session under a root directory. |
+| `SessionState` | Full persisted session document (`to_dict` / `from_dict` for custom stores). |
+| `SyncStateBackend` | Protocol — implement `load` / `save` to plug in any storage layer. |
+| `Q2GoogleSettings` | Pydantic settings; batch sizes, timeouts, and paths with env-var overrides. |
+| `get_settings` | Return a singleton `Q2GoogleSettings` from environment / `.env`. |
+
+Lower-level symbols in `q2google.gphotos`:
+
+| Symbol | Description |
+|--------|-------------|
+| `GooglePhotosAPI` | Thin `aiohttp` wrapper for Library v1 — use as `async with GooglePhotosAPI(...) as api`. |
+| `GooglePhotoLibraryPort` | Protocol matching `GooglePhotosAPI`; implement for testing or alternative HTTP clients. |
+| `PhotosScopes` | Enum of OAuth scopes (`READ_AND_APPEND`, `READ_ONLY`, `APPEND_ONLY`). |
 
 ## CLI
 
-Run with defaults for state directory (`.q2google_sessions`) and a new session UUID each run unless you pass `--session-id` or set `Q2GOOGLE_SESSION_ID`:
+The package also ships a CLI for one-off or scripted use:
 
 ```bash
-uv run q2google sync \
+q2google sync \
   --start-date 2026-01-08 \
   --end-date 2026-01-09 \
   --credentials client_secret.json \
@@ -39,33 +173,13 @@ Useful options:
 | `--fail-fast` | Stop on first error after persisting state |
 | `--log-level DEBUG` | Verbose logging |
 
-## Library
-
-```python
-from gopro_api import AsyncGoProClient
-
-from q2google import (
-    GoProToPhotosSync,
-    GooglePhotosClient,
-    GooglePhotosOAuth,
-    JsonFileBackend,
-)
-from q2google.gphotos.api import GooglePhotosAPI
-from q2google.gphotos.models import PhotosScopes
-
-# Wire credentials, async clients, JsonFileBackend + session_id for sync_date_range.
-```
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for module layout and extension points.
-
 ## Configuration
 
-Defaults and CLI fallbacks are defined by [`Q2GoogleSettings`](q2google/config.py) (Pydantic **BaseSettings**). Values load from environment variables with prefix **`Q2GOOGLE_`** and from a **`.env`** file in the working directory.
-
-Common variables:
+All CLI options have environment-variable equivalents. `Q2GoogleSettings` (Pydantic `BaseSettings`) loads them with the `Q2GOOGLE_` prefix and also reads a `.env` file in the working directory.
 
 | Variable | Purpose |
 |----------|---------|
+| `GP_ACCESS_TOKEN` | **GoPro cloud access token** — read by `AsyncGoProClient`; required for discovery |
 | `Q2GOOGLE_CREDENTIALS_PATH` | Google OAuth client secrets JSON path |
 | `Q2GOOGLE_TOKEN_PATH` | Authorized user token path |
 | `Q2GOOGLE_STATE_DIR` | JSON session state directory |
@@ -79,9 +193,14 @@ Common variables:
 
 See `q2google.config.Q2GoogleSettings` for the full list and defaults.
 
+## Architecture
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for module layout, the sync pipeline sequence diagram, and extension points.
+
 ## Development
 
 ```bash
+uv sync
 task format   # Ruff import fix + format
 task lint     # Ruff check + format check (no writes)
 task test     # Pytest with coverage on `q2google`
