@@ -33,8 +33,15 @@ StageCompleteCallback: TypeAlias = Callable[
     [StageKey, SessionState, list[MediaItemBatchCreateResponse] | None],
     Awaitable[None],
 ]
+StageStartCallback: TypeAlias = Callable[[StageKey], Awaitable[None]]
 
-__all__ = ["DEFAULT_DOWNLOAD_CHUNK_SIZE", "GoProToPhotosSync", "StageCompleteCallback", "SyncTransferMetrics"]
+__all__ = [
+    "DEFAULT_DOWNLOAD_CHUNK_SIZE",
+    "GoProToPhotosSync",
+    "StageCompleteCallback",
+    "StageStartCallback",
+    "SyncTransferMetrics",
+]
 
 
 @dataclass
@@ -89,6 +96,7 @@ class GoProToPhotosSync:
         session_id: str,
         batch_size: int | None = None,
         fail_fast: bool | None = None,
+        on_stage_start: StageStartCallback | None = None,
         on_stage_complete: StageCompleteCallback | None = None,
         transfer_metrics: SyncTransferMetrics | None = None,
     ) -> list[MediaItemBatchCreateResponse]:
@@ -103,6 +111,7 @@ class GoProToPhotosSync:
             session_id: Stable document key for load/resume.
             batch_size: Transfer batch size for new sessions; ``None`` uses ``settings.sync_batch_size``.
             fail_fast: When not ``None``, overrides ``settings.fail_fast``.
+            on_stage_start: Optional async hook invoked immediately before each stage begins.
             on_stage_complete: Optional async hook invoked after each stage finishes (including on
                 failure). For ``create``, the third argument is the list returned so far from that
                 stage; it is empty when the stage raised before returning.
@@ -130,12 +139,16 @@ class GoProToPhotosSync:
         all_responses: list[MediaItemBatchCreateResponse] = []
 
         try:
+            if on_stage_start is not None:
+                await on_stage_start("discovery")
             await self._discovery.run(state)
         finally:
             if on_stage_complete is not None:
                 await on_stage_complete("discovery", state, None)
 
         try:
+            if on_stage_start is not None:
+                await on_stage_start("transfer")
             await self._transfer.run(
                 state,
                 batch_size=state.batch_size,
@@ -148,6 +161,8 @@ class GoProToPhotosSync:
 
         batch_responses: list[MediaItemBatchCreateResponse] = []
         try:
+            if on_stage_start is not None:
+                await on_stage_start("create")
             batch_responses = await self._create.run(state, fail_fast=effective_fail_fast)
         finally:
             if on_stage_complete is not None:

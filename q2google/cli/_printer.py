@@ -8,6 +8,7 @@ from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
+from rich.status import Status
 from rich.table import Table
 
 from q2google.cli._formatters import MetricsFormatter
@@ -21,6 +22,11 @@ _STATUS_STYLE: dict[str, str] = {
     "pending": "yellow",
     "running": "cyan",
     "skipped": "dim",
+}
+_STAGE_LABELS: dict[str, str] = {
+    "discovery": "Discovery",
+    "transfer": "Transfer",
+    "create": "Create",
 }
 
 
@@ -48,6 +54,7 @@ class SyncPrinter:
     def __init__(self) -> None:
         self._console = Console(soft_wrap=True)
         self._err_console = Console(stderr=True, soft_wrap=True)
+        self._active_status: Status | None = None
 
     def print_session_start(
         self,
@@ -78,6 +85,29 @@ class SyncPrinter:
             )
         )
 
+    def start_stage(self, stage: StageKey, *, step: int, total: int) -> None:
+        """Start a live spinner indicating that a pipeline stage is in progress.
+
+        Stops any previously active spinner before starting the new one.
+
+        Args:
+            stage: The stage key (``"discovery"``, ``"transfer"``, or ``"create"``).
+            step: 1-based position of this stage in the pipeline.
+            total: Total number of pipeline stages.
+        """
+        self._stop_active_status()
+        label = _STAGE_LABELS.get(stage, stage.capitalize())
+        self._active_status = self._console.status(
+            f"[bold cyan][{step}/{total}] {label}[/bold cyan] [dim]running...[/dim]"
+        )
+        self._active_status.__enter__()
+
+    def _stop_active_status(self) -> None:
+        """Stop and clear the active spinner if one is running."""
+        if self._active_status is not None:
+            self._active_status.__exit__(None, None, None)
+            self._active_status = None
+
     def print_stage_summary(
         self,
         stage: StageKey,
@@ -94,10 +124,12 @@ class SyncPrinter:
             batch_create_responses: batchCreate API responses; only relevant for ``"create"`` stage.
             transfer_metrics: Transfer byte/time metrics; only used for the ``"transfer"`` stage.
         """
-        stage_labels = {"discovery": "Discovery", "transfer": "Transfer", "create": "Create"}
+        stage_labels = _STAGE_LABELS
         title = stage_labels[stage]
         stage_status = state.stages.get(stage, "?")
         table = _make_kv_table()
+
+        self._stop_active_status()
 
         if stage == "discovery":
             _add_discovery_rows(table, state)
