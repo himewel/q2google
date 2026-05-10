@@ -19,6 +19,9 @@ from q2google.state.base import SessionState, StageKey
 from q2google.state.local import JsonFileBackend
 from q2google.sync import GoProToPhotosSync
 
+_STAGE_STEP: dict[str, int] = {"discovery": 1, "transfer": 2, "create": 3}
+_TOTAL_STAGES = 3
+
 
 async def _run_sync(
     *,
@@ -85,6 +88,9 @@ async def _run_sync(
 
         transfer_metrics = SyncTransferMetrics()
 
+        async def _report_stage_start(st: StageKey) -> None:
+            printer.start_stage(st, step=_STAGE_STEP[st], total=_TOTAL_STAGES)
+
         async def _report_stage(
             st: StageKey,
             st_state: SessionState,
@@ -103,6 +109,7 @@ async def _run_sync(
             session_id=session_id,
             batch_size=batch_size,
             fail_fast=fail_fast,
+            on_stage_start=_report_stage_start,
             on_stage_complete=_report_stage,
             transfer_metrics=transfer_metrics,
         )
