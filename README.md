@@ -21,6 +21,142 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add q2google
 ```
 
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add q2google
+```
+
+## Library usage
+
+### Minimal example
+
+```python
+import asyncio
+from datetime import datetime
+
+from gopro_api import AsyncGoProClient
+
+from q2google import (
+    GoProToPhotosSync,
+    GooglePhotosClient,
+    GooglePhotosOAuth,
+    JsonFileBackend,
+)
+from q2google.gphotos.api import GooglePhotosAPI
+from q2google.gphotos.models import PhotosScopes
+
+
+async def main() -> None:
+    oauth = GooglePhotosOAuth(
+        client_secrets_file="client_secret.json",
+        scopes=[PhotosScopes.READ_AND_APPEND],
+        token_file="token.json",
+    )
+
+    async with (
+        AsyncGoProClient() as gopro,
+        GooglePhotosAPI(credentials=oauth) as api,
+    ):
+        photos = GooglePhotosClient(api=api)
+        backend = JsonFileBackend(root_dir=".q2google_sessions")
+
+        syncer = GoProToPhotosSync(
+            gopro=gopro,
+            photos=photos,
+            state_backend=backend,
+        )
+
+        responses = await syncer.sync_date_range(
+            start_date=datetime(2026, 1, 8),
+            end_date=datetime(2026, 1, 9),
+            session_id="my-session",
+        )
+        print(f"Created {len(responses)} batch(es).")
+
+
+asyncio.run(main())
+```
+
+### Resuming a session
+
+Pass the same `session_id` on subsequent runs. `GoProToPhotosSync` loads the persisted `SessionState` and skips already-completed items:
+
+```python
+responses = await syncer.sync_date_range(
+    start_date=datetime(2026, 1, 8),  # ignored when resuming
+    end_date=datetime(2026, 1, 9),    # ignored when resuming
+    session_id="my-session",          # same key → resumes from checkpoint
+)
+```
+
+### Custom state backend
+
+Implement `SyncStateBackend` to persist sessions in any storage layer (database, object store, etc.):
+
+```python
+from q2google import SessionState, SyncStateBackend
+
+
+class RedisBackend:
+    def load(self, session_id: str) -> SessionState | None:
+        raw = redis_client.get(session_id)
+        return SessionState.from_dict(json.loads(raw)) if raw else None
+
+    def save(self, state: SessionState) -> None:
+        redis_client.set(state.session_id, json.dumps(state.to_dict()))
+```
+
+Pass it directly to `GoProToPhotosSync(state_backend=RedisBackend())`. No other changes required.
+
+### Stage completion hook
+
+`on_stage_complete` is called after each of the three pipeline stages (discovery, transfer, create). Use it to report progress, emit metrics, or trigger side-effects:
+
+```python
+from q2google.state.base import SessionState, StageKey
+from q2google.photos import MediaItemBatchCreateResponse
+
+
+async def report(
+    stage: StageKey,
+    state: SessionState,
+    responses: list[MediaItemBatchCreateResponse] | None,
+) -> None:
+    print(f"[{stage}] items={len(state.items)} stage_states={state.stages}")
+
+
+responses = await syncer.sync_date_range(
+    start_date=datetime(2026, 1, 8),
+    end_date=datetime(2026, 1, 9),
+    session_id="my-session",
+    on_stage_complete=report,
+)
+```
+
+### Public API
+
+All public symbols are importable directly from `q2google`:
+
+| Symbol | Description |
+|--------|-------------|
+| `GoProToPhotosSync` | Main orchestrator; runs discovery → transfer → create. |
+| `GooglePhotosClient` | Resumable upload facade (`upload_file_path`, `create_media_items`). |
+| `GooglePhotosOAuth` | Load, refresh, or obtain Google OAuth credentials. |
+| `JsonFileBackend` | File-based `SyncStateBackend`; one JSON per session under a root directory. |
+| `SessionState` | Full persisted session document (`to_dict` / `from_dict` for custom stores). |
+| `SyncStateBackend` | Protocol — implement `load` / `save` to plug in any storage layer. |
+| `Q2GoogleSettings` | Pydantic settings; batch sizes, timeouts, and paths with env-var overrides. |
+| `get_settings` | Return a singleton `Q2GoogleSettings` from environment / `.env`. |
+
+Lower-level symbols in `q2google.gphotos`:
+
+| Symbol | Description |
+|--------|-------------|
+| `GooglePhotosAPI` | Thin `aiohttp` wrapper for Library v1 — use as `async with GooglePhotosAPI(...) as api`. |
+| `GooglePhotoLibraryPort` | Protocol matching `GooglePhotosAPI`; implement for testing or alternative HTTP clients. |
+| `PhotosScopes` | Enum of OAuth scopes (`READ_AND_APPEND`, `READ_ONLY`, `APPEND_ONLY`). |
+
 ## CLI
 
 The package ships a CLI for one-off or scripted use:

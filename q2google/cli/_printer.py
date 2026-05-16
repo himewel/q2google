@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import dataclasses
+import json
+import sys
 from datetime import datetime
+from enum import Enum
 
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
+from rich.status import Status
 from rich.table import Table
 
 from q2google.cli._formatters import MetricsFormatter
@@ -15,12 +20,26 @@ from q2google.metrics import SyncTransferMetrics
 from q2google.photos import MediaItemBatchCreateResponse
 from q2google.state.base import SessionState, StageKey
 
+
+class OutputFormat(str, Enum):
+    """Machine-readable output format selector."""
+
+    rich = "rich"
+    tsv = "tsv"
+    json = "json"
+
+
 _STATUS_STYLE: dict[str, str] = {
     "completed": "green",
     "failed": "bold red",
     "pending": "yellow",
     "running": "cyan",
     "skipped": "dim",
+}
+_STAGE_LABELS: dict[str, str] = {
+    "discovery": "Discovery",
+    "transfer": "Transfer",
+    "create": "Create",
 }
 
 
@@ -41,13 +60,16 @@ class SyncPrinter:
     """Rich console renderer for q2google sync output.
 
     Attributes:
+        _fmt: Active output format; controls whether Rich, TSV, or JSON is emitted.
         _console: Primary stdout console.
         _err_console: Stderr console for warnings.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, fmt: OutputFormat = OutputFormat.rich) -> None:
+        self._fmt = fmt
         self._console = Console(soft_wrap=True)
         self._err_console = Console(stderr=True, soft_wrap=True)
+        self._active_status: Status | None = None
 
     def print_session_start(
         self,
@@ -59,12 +81,17 @@ class SyncPrinter:
     ) -> None:
         """Print a session header panel at the beginning of a sync run.
 
+        Suppressed when output format is ``tsv`` or ``json``.
+
         Args:
             session_id: The session identifier.
             existing_session: Loaded state if resuming; ``None`` for a fresh session.
             start: Capture window start (used only when ``existing_session`` is ``None``).
             end: Capture window end (used only when ``existing_session`` is ``None``).
         """
+        if self._fmt != OutputFormat.rich:
+            return
+
         if existing_session is not None:
             window = f"{existing_session.start_date_iso} → {existing_session.end_date_iso}"
         else:
@@ -78,6 +105,31 @@ class SyncPrinter:
             )
         )
 
+    def start_stage(self, stage: StageKey, *, step: int, total: int) -> None:
+        """Start a live spinner indicating that a pipeline stage is in progress.
+
+        No-op when output format is ``tsv`` or ``json`` (machine consumers do not want
+        spinner frames in their output). Stops any previously active spinner before
+        starting the new one.
+
+        Args:
+            stage: The stage key (``"discovery"``, ``"transfer"``, or ``"create"``).
+            step: 1-based position of this stage in the pipeline.
+            total: Total number of pipeline stages.
+        """
+        if self._fmt != OutputFormat.rich:
+            return
+        self._stop_active_status()
+        label = _STAGE_LABELS.get(stage, stage.capitalize())
+        self._active_status = self._console.status(f"⏳ [bold cyan][{step}/{total}] {label}…[/bold cyan]")
+        self._active_status.__enter__()
+
+    def _stop_active_status(self) -> None:
+        """Stop and clear the active spinner if one is running."""
+        if self._active_status is not None:
+            self._active_status.__exit__(None, None, None)
+            self._active_status = None
+
     def print_stage_summary(
         self,
         stage: StageKey,
@@ -88,13 +140,21 @@ class SyncPrinter:
     ) -> None:
         """Print per-item outcomes after one pipeline stage completes.
 
+        Suppressed when output format is ``tsv`` or ``json``; the full summary is
+        deferred to :meth:`print_sync_summary` in those modes.
+
         Args:
             stage: The stage key (``"discovery"``, ``"transfer"``, or ``"create"``).
             state: Session state after the stage.
             batch_create_responses: batchCreate API responses; only relevant for ``"create"`` stage.
             transfer_metrics: Transfer byte/time metrics; only used for the ``"transfer"`` stage.
         """
-        stage_labels = {"discovery": "Discovery", "transfer": "Transfer", "create": "Create"}
+        self._stop_active_status()
+
+        if self._fmt != OutputFormat.rich:
+            return
+
+        stage_labels = _STAGE_LABELS
         title = stage_labels[stage]
         stage_status = state.stages.get(stage, "?")
         table = _make_kv_table()
@@ -123,7 +183,99 @@ class SyncPrinter:
         elapsed_seconds: float,
         transfer_metrics: SyncTransferMetrics,
     ) -> None:
-        """Print a human-readable post-sync summary from persisted state and API responses.
+        """Print a post-sync summary; format depends on ``--output``.
+
+        Args:
+            session_id: The session identifier.
+            state: Final session state after all stages.
+            responses: batchCreate API responses from this invocation.
+            elapsed_seconds: Total wall-clock time.
+            transfer_metrics: Transfer byte/time metrics from the sync run.
+        """
+        if self._fmt == OutputFormat.json:
+            self._print_summary_json(session_id, state, elapsed_seconds, transfer_metrics)
+            return
+        if self._fmt == OutputFormat.tsv:
+            self._print_summary_tsv(state)
+            return
+        self._print_summary_rich(
+            session_id, state, responses, elapsed_seconds=elapsed_seconds, transfer_metrics=transfer_metrics
+        )
+
+    def print_state_missing_warning(
+        self,
+        transfer_metrics: SyncTransferMetrics,
+        elapsed_seconds: float,
+    ) -> None:
+        """Print a warning when the session state file is missing after sync.
+
+        Args:
+            transfer_metrics: Transfer byte/time metrics from the run.
+            elapsed_seconds: Total wall-clock time.
+        """
+        self._err_console.print("[yellow]Warning: session state file missing after sync; summary unavailable.[/yellow]")
+        if self._fmt == OutputFormat.json:
+            sys.stdout.write(json.dumps({"error": "session state file missing after sync"}) + "\n")
+            return
+        if self._fmt == OutputFormat.tsv:
+            return
+        self._print_throughput(transfer_metrics)
+        self._console.print(f"[bold]{MetricsFormatter.execution_time(elapsed_seconds)}[/bold]")
+
+    # ------------------------------------------------------------------
+    # Private renderers
+    # ------------------------------------------------------------------
+
+    def _print_summary_json(
+        self,
+        session_id: str,
+        state: SessionState,
+        elapsed_seconds: float,
+        transfer_metrics: SyncTransferMetrics,
+    ) -> None:
+        """Emit the sync summary as a single JSON object on stdout.
+
+        Args:
+            session_id: The session identifier.
+            state: Final session state.
+            elapsed_seconds: Total wall-clock time.
+            transfer_metrics: Transfer byte/time metrics.
+        """
+        payload: dict = {
+            "session_id": session_id,
+            "capture_window": f"{state.start_date_iso}/{state.end_date_iso}",
+            "elapsed_seconds": round(elapsed_seconds, 3),
+            "stages": dict(state.stages),
+            "items": [i.to_dict() for i in state.items.values()],
+            "transfer_metrics": dataclasses.asdict(transfer_metrics),
+        }
+        sys.stdout.write(json.dumps(payload, indent=2))
+        sys.stdout.write("\n")
+
+    def _print_summary_tsv(self, state: SessionState) -> None:
+        """Emit the items table as tab-separated values on stdout.
+
+        Args:
+            state: Final session state.
+        """
+        tsv_console = Console(soft_wrap=True, highlight=False, markup=False)
+        headers = ["file_name", "discovery_status", "transfer_status", "create_status"]
+        tsv_console.print("\t".join(headers))
+        for item in sorted(state.items.values(), key=lambda i: i.file_name):
+            tsv_console.print(
+                f"{item.file_name}\t{item.discovery_status}\t{item.transfer_status}\t{item.create_status}"
+            )
+
+    def _print_summary_rich(
+        self,
+        session_id: str,
+        state: SessionState,
+        responses: list[MediaItemBatchCreateResponse],
+        *,
+        elapsed_seconds: float,
+        transfer_metrics: SyncTransferMetrics,
+    ) -> None:
+        """Render the full Rich sync summary.
 
         Args:
             session_id: The session identifier.
@@ -154,21 +306,6 @@ class SyncPrinter:
         self._console.print(_build_items_summary_table(items))
         self._print_api_row_summary(responses)
         self._print_failures_table(items)
-        self._print_throughput(transfer_metrics)
-        self._console.print(f"[bold]{MetricsFormatter.execution_time(elapsed_seconds)}[/bold]")
-
-    def print_state_missing_warning(
-        self,
-        transfer_metrics: SyncTransferMetrics,
-        elapsed_seconds: float,
-    ) -> None:
-        """Print a warning when the session state file is missing after sync.
-
-        Args:
-            transfer_metrics: Transfer byte/time metrics from the run.
-            elapsed_seconds: Total wall-clock time.
-        """
-        self._err_console.print("[yellow]Warning: session state file missing after sync; summary unavailable.[/yellow]")
         self._print_throughput(transfer_metrics)
         self._console.print(f"[bold]{MetricsFormatter.execution_time(elapsed_seconds)}[/bold]")
 

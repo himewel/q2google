@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.metadata
 import time
 import uuid
 from datetime import datetime
 from pathlib import Path
 
 import typer
+from rich.console import Console
 
 from q2google.cli._logging import _configure_cli_logging
-from q2google.cli._printer import SyncPrinter
+from q2google.cli._printer import OutputFormat, SyncPrinter
 from q2google.cli._runner import _run_sync
 from q2google.config import get_settings
 from q2google.state.local import JsonFileBackend
@@ -22,9 +24,27 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
+_err_console = Console(stderr=True, soft_wrap=True)
 
-@app.callback(invoke_without_command=True, no_args_is_help=True)
-def _main(ctx: typer.Context) -> None:
+
+def _version_callback(value: bool) -> None:
+    if value:
+        version = importlib.metadata.version("q2google")
+        typer.echo(version)
+        raise typer.Exit()
+
+
+@app.callback()
+def _main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        "-V",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show the version and exit.",
+    ),
+) -> None:
     """q2google — sync GoPro cloud media to Google Photos."""
 
 
@@ -38,21 +58,25 @@ def _parse_iso_datetime(value: str) -> datetime:
         Parsed timezone-naive or aware datetime.
 
     Raises:
-        ValueError: If ``value`` is not a valid ISO string.
+        typer.Exit: Printed to stderr and exits with code 1 when ``value`` is invalid.
     """
-    return datetime.fromisoformat(value)
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        _err_console.print(f"[bold red]Error:[/bold red] Invalid ISO date/datetime: {value!r}")
+        raise typer.Exit(code=1)
 
 
 @app.command("sync")
 def sync_command(
     start_date: str = typer.Option(
         ...,
-        "--start-date",
+        "--start",
         help="Capture window start (ISO date or datetime, e.g. 2026-01-08).",
     ),
     end_date: str = typer.Option(
         ...,
-        "--end-date",
+        "--end",
         help="Capture window end (ISO date or datetime, e.g. 2026-01-09).",
     ),
     credentials: Path | None = typer.Option(
@@ -111,6 +135,12 @@ def sync_command(
         "-v",
         help="Log q2google at INFO (libraries stay quieter unless [bold]--log-level DEBUG[/bold]).",
     ),
+    output: OutputFormat = typer.Option(
+        OutputFormat.rich,
+        "--output",
+        "-o",
+        help="Output format: [bold]rich[/bold] (default), [bold]tsv[/bold], or [bold]json[/bold].",
+    ),
 ) -> None:
     """Run discovery, transfer, and create stages for the given capture window.
 
@@ -131,46 +161,55 @@ def sync_command(
         fail_fast: Overrides settings when ``True`` or ``False``; ``None`` uses settings.
         log_level: Explicit logging level; when omitted the CLI defaults to quiet (WARNING).
         verbose: When True and ``log_level`` is omitted, sets INFO for ``q2google`` loggers.
+        output: Output format selector; ``rich`` (default), ``tsv``, or ``json``.
     """
-    cfg = get_settings()
-    _configure_cli_logging(explicit_level=log_level, verbose=verbose)
+    try:
+        cfg = get_settings()
+        _configure_cli_logging(explicit_level=log_level, verbose=verbose)
 
-    start = _parse_iso_datetime(start_date)
-    end = _parse_iso_datetime(end_date)
+        start = _parse_iso_datetime(start_date)
+        end = _parse_iso_datetime(end_date)
 
-    sid = session_id or cfg.session_id or str(uuid.uuid4())
-    resolved_state_dir = state_dir if state_dir is not None else cfg.state_dir
+        sid = session_id or cfg.session_id or str(uuid.uuid4())
+        resolved_state_dir = state_dir if state_dir is not None else cfg.state_dir
 
-    state_backend = JsonFileBackend(resolved_state_dir)
-    existing_session = state_backend.load(sid)
+        state_backend = JsonFileBackend(resolved_state_dir)
+        existing_session = state_backend.load(sid)
 
-    printer = SyncPrinter()
-    printer.print_session_start(sid, existing_session, start=start, end=end)
+        printer = SyncPrinter(fmt=output)
+        printer.print_session_start(sid, existing_session, start=start, end=end)
 
-    t0 = time.perf_counter()
-    responses, transfer_metrics = asyncio.run(
-        _run_sync(
-            cfg=cfg,
-            start=start,
-            end=end,
-            credentials=credentials if credentials is not None else cfg.credentials_path,
-            token=token if token is not None else cfg.token_path,
-            state_dir=resolved_state_dir,
-            session_id=sid,
-            chunk_multiplier=(chunk_multiplier if chunk_multiplier is not None else cfg.chunk_granularity_multiplier),
-            max_items=max_items if max_items is not None else cfg.gopro_max_items,
-            prefer_height=prefer_height if prefer_height is not None else cfg.gopro_prefer_height,
-            batch_size=batch_size,
-            fail_fast=fail_fast,
-            printer=printer,
+        t0 = time.perf_counter()
+        responses, transfer_metrics = asyncio.run(
+            _run_sync(
+                cfg=cfg,
+                start=start,
+                end=end,
+                credentials=credentials if credentials is not None else cfg.credentials_path,
+                token=token if token is not None else cfg.token_path,
+                state_dir=resolved_state_dir,
+                session_id=sid,
+                chunk_multiplier=(
+                    chunk_multiplier if chunk_multiplier is not None else cfg.chunk_granularity_multiplier
+                ),
+                max_items=max_items if max_items is not None else cfg.gopro_max_items,
+                prefer_height=prefer_height if prefer_height is not None else cfg.gopro_prefer_height,
+                batch_size=batch_size,
+                fail_fast=fail_fast,
+                printer=printer,
+            )
         )
-    )
-    elapsed = time.perf_counter() - t0
+        elapsed = time.perf_counter() - t0
 
-    final_state = state_backend.load(sid)
-    if final_state is None:
-        printer.print_state_missing_warning(transfer_metrics, elapsed)
-    else:
-        printer.print_sync_summary(
-            sid, final_state, responses, elapsed_seconds=elapsed, transfer_metrics=transfer_metrics
-        )
+        final_state = state_backend.load(sid)
+        if final_state is None:
+            printer.print_state_missing_warning(transfer_metrics, elapsed)
+        else:
+            printer.print_sync_summary(
+                sid, final_state, responses, elapsed_seconds=elapsed, transfer_metrics=transfer_metrics
+            )
+    except (typer.Exit, KeyboardInterrupt):
+        raise
+    except Exception as exc:
+        _err_console.print(f"[bold red]Error:[/bold red] {exc}")
+        raise typer.Exit(code=1)
