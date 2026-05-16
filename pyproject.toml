@@ -22,9 +22,19 @@ dependencies = [
 [project.scripts]
 q2google = "q2google.cli:app"
 
+[project.optional-dependencies]
+docs = [
+    "mike>=2",
+    "mkdocs-material>=9",
+    "mkdocstrings[python]>=0.27",
+]
+
 [dependency-groups]
 dev = [
     "coverage>=7",
+    "mike>=2",
+    "mkdocs-material>=9",
+    "mkdocstrings[python]>=0.27",
     "pytest>=8",
     "pytest-asyncio>=1",
     "pytest-cov>=6",
@@ -55,6 +65,8 @@ lint = "uv run ruff check . && uv run ruff format --check ."
 format = "uv run ruff check . --fix --select I && uv run ruff format ."
 test = "uv run pytest tests -vv -x -s --cov=q2google"
 cov = "uv run coverage html"
+docs = "uv run mkdocs serve"
+docs-build = "uv run mkdocs build --strict"
 all = "task lint && task format && task test && task cov"
 
 [tool.coverage.run]

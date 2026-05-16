@@ -1,0 +1,92 @@
+site_name: q2google
+site_description: Sync GoPro cloud media to Google Photos Library.
+site_url: https://himewel.github.io/q2google/
+repo_url: https://github.com/himewel/q2google
+repo_name: himewel/q2google
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  favicon: assets/favicon.svg
+  logo: assets/favicon.svg
+  features:
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: grey
+      accent: cyan
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: grey
+      accent: cyan
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  version_provider: mike
+
+extra_css:
+  - stylesheets/extra.css
+  - stylesheets/monokai.css
+  - stylesheets/colorful.css
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            merge_init_into_class: true
+            show_signature_annotations: true
+
+extra:
+  version:
+    provider: mike
+    default: latest
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - CLI: cli.md
+  - Configuration: configuration.md
+  - Architecture: ARCHITECTURE.md
+  - API Reference:
+    - api/index.md
+    - Sync: api/sync.md
+    - Photos: api/photos.md
+    - Config: api/config.md
+    - State: api/state.md
+    - GoPro Photos HTTP: api/gphotos.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
