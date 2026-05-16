@@ -49,6 +49,7 @@ jobs:
     environment: pypi
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: Download built distributions
         uses: actions/download-artifact@v4
@@ -58,35 +59,33 @@ jobs:
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
 
-  deploy-docs:
-    name: Deploy docs to GitHub Pages
-    needs: build
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  # deploy-docs:
+  #   name: Deploy docs to GitHub Pages
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.12"
+  #     - uses: astral-sh/setup-uv@v5
+  #       with:
+  #         python-version: "3.12"
 
-      - name: Install docs dependencies
-        run: uv pip install -e ".[docs]"
+  #     - name: Install docs dependencies
+  #       run: uv pip install -e ".[docs]"
 
-      - name: Fetch gh-pages history for mike
-        run: git fetch origin gh-pages --depth=1 || true
+  #     - name: Fetch gh-pages history for mike
+  #       run: git fetch origin gh-pages --depth=1 || true
 
-      - name: Deploy versioned docs
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            mike deploy --push "$GITHUB_REF_NAME"
-          else
-            # "latest" is an alias in versions.json; deploy version "main" and move the alias (needs --update-aliases).
-            mike deploy --push --update-aliases main latest
-            mike set-default --push latest
-          fi
+  #     - name: Deploy versioned docs
+  #       run: |
+  #         git config user.name github-actions
+  #         git config user.email github-actions@github.com
+  #         if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+  #           mike deploy --push "$GITHUB_REF_NAME"
+  #         else
+  #           # "latest" is an alias in versions.json; deploy version "main" and move the alias (needs --update-aliases).
+  #           mike deploy --push --update-aliases main latest
+  #           mike set-default --push latest
+  #         fi
