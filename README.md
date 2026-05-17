@@ -1,5 +1,13 @@
 # q2google
 
+[![CI](https://github.com/himewel/q2google/actions/workflows/ci.yml/badge.svg)](https://github.com/himewel/q2google/actions/workflows/ci.yml)
+[![Release](https://github.com/himewel/q2google/actions/workflows/release.yml/badge.svg)](https://github.com/himewel/q2google/actions/workflows/release.yml)
+[![PyPI version](https://img.shields.io/pypi/v/q2google)](https://pypi.org/project/q2google/)
+[![Python versions](https://img.shields.io/pypi/pyversions/q2google)](https://pypi.org/project/q2google/)
+[![GitHub release](https://img.shields.io/github/v/release/himewel/q2google)](https://github.com/himewel/q2google/releases/latest)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://himewel.github.io/q2google/)
+[![License](https://img.shields.io/github/license/himewel/q2google)](LICENSE)
+
 Sync media from **GoPro cloud** into **Google Photos** for a capture date range with **resumable session state**.
 
 ## Requirements
