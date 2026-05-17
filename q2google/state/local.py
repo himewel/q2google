@@ -25,7 +25,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from q2google.state.base import BatchState, ItemState, SessionState
+from q2google.state.base import SessionState
 
 _METADATA_KEYS: tuple[str, ...] = (
     "schema_version",
