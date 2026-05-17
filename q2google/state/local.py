@@ -1,7 +1,21 @@
 """Filesystem-backed :class:`~q2google.state.base.SyncStateBackend`.
 
-Writes UTF-8 JSON per session using a temp file and :func:`os.replace` for atomic publish.
-Intended for single-writer use; concurrent writers to the same session path are unsupported.
+Stores each session as a directory tree with one JSON file per item and one per batch,
+making concurrent writes to different items safe by construction.  Each individual file
+is published atomically via a temp file and :func:`os.replace`.
+
+Layout::
+
+    {root}/
+      {session_id}/
+        meta.json               # session metadata + stages (no items, no batches)
+        items/
+          {safe_file_name}.json # one file per ItemState
+        batches/
+          {batch_key}.json      # one file per BatchState
+
+Legacy flat-file sessions (``{session_id}.json``) written by older versions of this
+module are still readable; ``load`` detects and falls back to that format transparently.
 """
 
 from __future__ import annotations
@@ -9,73 +23,192 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import Any
 
-from q2google.state.base import SessionState
+from q2google.state.base import BatchState, ItemState, SessionState
+
+_METADATA_KEYS: tuple[str, ...] = (
+    "schema_version",
+    "session_id",
+    "created_at",
+    "updated_at",
+    "start_date_iso",
+    "end_date_iso",
+    "batch_size",
+    "stages",
+)
+
+
+def _safe_name(name: str) -> str:
+    """Sanitize ``name`` for safe use as a filesystem path component.
+
+    Args:
+        name: Raw string such as a session id, GoPro filename, or batch key.
+
+    Returns:
+        Version of ``name`` with path separators and ``..`` replaced by ``_``.
+    """
+    return name.replace(os.sep, "_").replace("..", "_")
 
 
 class JsonFileBackend:
-    """Store each session as ``{root}/{sanitized_session_id}.json``."""
+    """Store each session under ``{root}/{session_id}/`` as a directory of JSON files.
+
+    Each :class:`~q2google.state.base.ItemState` and
+    :class:`~q2google.state.base.BatchState` is written to its own file so that
+    concurrent writers updating different items never conflict.  Session-level metadata
+    (stages, timestamps) lives in ``meta.json`` and is still subject to last-write-wins
+    semantics, but stage transitions are sequential in the current orchestrator so this
+    is not a practical concern.
+    """
 
     def __init__(self, root: str | Path) -> None:
         """Create the backend and ensure ``root`` exists.
 
         Args:
-            root: Directory that will contain ``*.json`` session files.
+            root: Directory that will contain per-session subdirectories.
         """
         self._root = Path(root)
         self._root.mkdir(parents=True, exist_ok=True)
 
-    def _path(self, session_id: str) -> Path:
-        """Resolve a safe filename under ``root`` for ``session_id``.
+    # ------------------------------------------------------------------
+    # Path helpers
+    # ------------------------------------------------------------------
+
+    def _session_dir(self, session_id: str) -> Path:
+        """Return the session directory path for ``session_id``.
 
         Args:
-            session_id: External session key (path separators and ``..`` neutralized).
+            session_id: External session key.
 
         Returns:
-            Absolute path to the JSON file for this session.
+            ``{root}/{safe(session_id)}/``
         """
-        safe = session_id.replace(os.sep, "_").replace("..", "_")
-        return self._root / f"{safe}.json"
+        return self._root / _safe_name(session_id)
 
-    def load(self, session_id: str) -> SessionState | None:
-        """Load ``SessionState`` from disk when the JSON file exists.
+    def _meta_path(self, session_id: str) -> Path:
+        """Return the path to the session metadata file.
 
         Args:
-            session_id: Session key used when saving.
+            session_id: External session key.
 
         Returns:
-            Parsed state, or ``None`` if the file is missing.
-
-        Raises:
-            json.JSONDecodeError: If the file contents are not valid JSON.
+            ``{session_dir}/meta.json``
         """
-        path = self._path(session_id)
-        if not path.is_file():
-            return None
-        text = path.read_text(encoding="utf-8")
-        data = json.loads(text)
-        return SessionState.from_dict(data)
+        return self._session_dir(session_id) / "meta.json"
 
-    def save(self, state: SessionState) -> None:
-        """Write ``state`` atomically via temp file + replace.
+    def _item_path(self, session_id: str, file_name: str) -> Path:
+        """Return the path to a single item file.
 
         Args:
-            state: Document whose ``session_id`` determines the output filename.
+            session_id: External session key.
+            file_name: GoPro logical filename used as the item key.
+
+        Returns:
+            ``{session_dir}/items/{safe(file_name)}.json``
+        """
+        return self._session_dir(session_id) / "items" / f"{_safe_name(file_name)}.json"
+
+    def _batch_path(self, session_id: str, batch_key: str) -> Path:
+        """Return the path to a single batch file.
+
+        Args:
+            session_id: External session key.
+            batch_key: String batch index used as the batch key.
+
+        Returns:
+            ``{session_dir}/batches/{safe(batch_key)}.json``
+        """
+        return self._session_dir(session_id) / "batches" / f"{_safe_name(batch_key)}.json"
+
+    # ------------------------------------------------------------------
+    # I/O primitive
+    # ------------------------------------------------------------------
+
+    def _atomic_write(self, path: Path, data: dict[str, Any]) -> None:
+        """Write ``data`` to ``path`` atomically via a temporary file and :func:`os.replace`.
+
+        Args:
+            path: Destination file path; parent directory is created if absent.
+            data: JSON-serializable mapping to persist.
 
         Raises:
             OSError: On failure to write the temp file or replace the destination.
         """
-        path = self._path(state.session_id)
         path.parent.mkdir(parents=True, exist_ok=True)
-        payload = json.dumps(state.to_dict(), indent=2, ensure_ascii=False)
+        payload = json.dumps(data, indent=2, ensure_ascii=False)
         tmp = path.with_suffix(f".{os.getpid()}.tmp")
         try:
             tmp.write_text(payload, encoding="utf-8")
             os.replace(tmp, path)
         except OSError:
-            if tmp.is_file():
-                tmp.unlink(missing_ok=True)
+            tmp.unlink(missing_ok=True)
             raise
+
+    # ------------------------------------------------------------------
+    # SyncStateBackend interface
+    # ------------------------------------------------------------------
+
+    def load(self, session_id: str) -> SessionState | None:
+        """Load ``SessionState`` for ``session_id`` from disk.
+
+        Falls back to the legacy flat-file format (``{session_id}.json``) when the
+        session directory does not exist, so sessions written by older versions of this
+        module remain readable without any migration step.
+
+        Args:
+            session_id: Session key used when saving.
+
+        Returns:
+            Parsed state, or ``None`` if neither the directory nor the legacy file exists.
+
+        Raises:
+            json.JSONDecodeError: If any JSON file on disk is malformed.
+        """
+        legacy = self._root / f"{_safe_name(session_id)}.json"
+        if legacy.is_file():
+            return SessionState.from_dict(json.loads(legacy.read_text(encoding="utf-8")))
+
+        meta_path = self._meta_path(session_id)
+        if not meta_path.is_file():
+            return None
+
+        session_dir = self._session_dir(session_id)
+        data: dict[str, Any] = json.loads(meta_path.read_text(encoding="utf-8"))
+
+        data["items"] = {
+            d["file_name"]: d
+            for p in (session_dir / "items").glob("*.json")
+            for d in (json.loads(p.read_text(encoding="utf-8")),)
+        }
+        data["batches"] = {
+            str(d["batch_index"]): d
+            for p in (session_dir / "batches").glob("*.json")
+            for d in (json.loads(p.read_text(encoding="utf-8")),)
+        }
+        return SessionState.from_dict(data)
+
+    def save(self, state: SessionState) -> None:
+        """Persist ``state`` by writing metadata, items, and batches to separate files.
+
+        Each file is written atomically.  Writers updating different items never
+        conflict because they target distinct paths.
+
+        Args:
+            state: Complete session document to store.
+
+        Raises:
+            OSError: On failure to write any individual file.
+        """
+        full = state.to_dict()
+        meta = {k: full[k] for k in _METADATA_KEYS}
+        self._atomic_write(self._meta_path(state.session_id), meta)
+
+        for file_name, item in full["items"].items():
+            self._atomic_write(self._item_path(state.session_id, file_name), item)
+
+        for batch_key, batch in full["batches"].items():
+            self._atomic_write(self._batch_path(state.session_id, str(batch_key)), batch)
 
 
 __all__ = ["JsonFileBackend"]
