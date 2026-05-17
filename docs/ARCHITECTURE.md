@@ -15,7 +15,7 @@ q2google moves assets from **GoPro cloud** (`gopro-api` / `AsyncGoProClient`) in
 | `q2google/photos.py` | `GooglePhotosClient` + `GooglePhotoLibraryPort` — chunk upload and batched `batchCreate`. |
 | `q2google/gphotos/` | Low-level Library v1 HTTP (`GooglePhotosAPI`), OAuth (`GooglePhotosOAuth`), Pydantic models. |
 | `q2google/state/base.py` | `SessionState`, `ItemState`, `SyncStateBackend` protocol — persistence contract. |
-| `q2google/state/local.py` | `JsonFileBackend` — one JSON file per session under a root directory. |
+| `q2google/state/local.py` | `JsonFileBackend` — directory-tree backend; each session is a subdirectory containing `meta.json`, `items/*.json`, and `batches/*.json`. Reads legacy flat-file sessions transparently. |
 
 ## Sync pipeline (`sync_date_range`)
 
