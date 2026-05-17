@@ -886,7 +886,7 @@
 </tr>
 <tr>
 <td><code>q2google/state/local.py</code></td>
-<td><code>JsonFileBackend</code> — one JSON file per session under a root directory.</td>
+<td><code>JsonFileBackend</code> — directory-tree backend; each session is a subdirectory containing <code>meta.json</code>, <code>items/*.json</code>, and <code>batches/*.json</code>. Reads legacy flat-file sessions transparently.</td>
 </tr>
 </tbody>
 </table>
