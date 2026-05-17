@@ -19,7 +19,7 @@ All settings are managed by `Q2GoogleSettings` — a [Pydantic `BaseSettings`](h
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `Q2GOOGLE_STATE_DIR` | `.q2google_sessions` | Root directory for per-session JSON state files. |
+| `Q2GOOGLE_STATE_DIR` | `.q2google_sessions` | Root directory for per-session state; each session is stored as a subdirectory containing `meta.json`, `items/`, and `batches/`. |
 | `Q2GOOGLE_SESSION_ID` | _(auto)_ | Default session identifier when `--session-id` is omitted from the CLI. |
 
 ## Transfer tuning

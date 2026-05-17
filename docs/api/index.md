@@ -22,7 +22,7 @@ from q2google import (
 | [`GoProToPhotosSync`](sync.md) | `q2google.sync` | Main orchestrator; runs discovery → transfer → create. |
 | [`GooglePhotosClient`](photos.md) | `q2google.photos` | Resumable upload facade (`upload_file_path`, `create_media_items`). |
 | [`GooglePhotosOAuth`](gphotos.md) | `q2google.gphotos.auth` | Load, refresh, or obtain Google OAuth credentials. |
-| [`JsonFileBackend`](state.md) | `q2google.state.local` | File-based `SyncStateBackend`; one JSON per session under a root directory. |
+| [`JsonFileBackend`](state.md) | `q2google.state.local` | File-based `SyncStateBackend`; stores each session as a directory of JSON files (`meta.json`, `items/`, `batches/`). |
 | [`SessionState`](state.md) | `q2google.state.base` | Full persisted session document (`to_dict` / `from_dict`). |
 | [`SyncStateBackend`](state.md) | `q2google.state.base` | Protocol — implement `load` / `save` to plug in any storage layer. |
 | [`Q2GoogleSettings`](config.md) | `q2google.config` | Pydantic settings; batch sizes, timeouts, and paths with env-var overrides. |

@@ -26,7 +26,7 @@ q2google sync [OPTIONS]
 
 | Option | Env var | Default | Description |
 |--------|---------|---------|-------------|
-| `--state-dir PATH` | `Q2GOOGLE_STATE_DIR` | `.q2google_sessions` | Directory for per-session JSON state files. |
+| `--state-dir PATH` | `Q2GOOGLE_STATE_DIR` | `.q2google_sessions` | Root directory for per-session state; each session is stored as a subdirectory containing `meta.json`, `items/`, and `batches/`. |
 | `--session-id TEXT` | `Q2GOOGLE_SESSION_ID` | auto-generated | Stable identifier; reuse to resume an interrupted run. |
 
 ### Transfer options

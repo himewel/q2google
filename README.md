@@ -143,7 +143,7 @@ All public symbols are importable directly from `q2google`:
 | `GoProToPhotosSync` | Main orchestrator; runs discovery → transfer → create. |
 | `GooglePhotosClient` | Resumable upload facade (`upload_file_path`, `create_media_items`). |
 | `GooglePhotosOAuth` | Load, refresh, or obtain Google OAuth credentials. |
-| `JsonFileBackend` | File-based `SyncStateBackend`; one JSON per session under a root directory. |
+| `JsonFileBackend` | File-based `SyncStateBackend`; stores each session as a directory of JSON files (`meta.json`, `items/`, `batches/`). |
 | `SessionState` | Full persisted session document (`to_dict` / `from_dict` for custom stores). |
 | `SyncStateBackend` | Protocol — implement `load` / `save` to plug in any storage layer. |
 | `Q2GoogleSettings` | Pydantic settings; batch sizes, timeouts, and paths with env-var overrides. |
@@ -295,7 +295,7 @@ All public symbols are importable directly from `q2google`:
 | `GoProToPhotosSync` | Main orchestrator; runs discovery → transfer → create. |
 | `GooglePhotosClient` | Resumable upload facade (`upload_file_path`, `create_media_items`). |
 | `GooglePhotosOAuth` | Load, refresh, or obtain Google OAuth credentials. |
-| `JsonFileBackend` | File-based `SyncStateBackend`; one JSON per session under a root directory. |
+| `JsonFileBackend` | File-based `SyncStateBackend`; stores each session as a directory of JSON files (`meta.json`, `items/`, `batches/`). |
 | `SessionState` | Full persisted session document (`to_dict` / `from_dict` for custom stores). |
 | `SyncStateBackend` | Protocol — implement `load` / `save` to plug in any storage layer. |
 | `Q2GoogleSettings` | Pydantic settings; batch sizes, timeouts, and paths with env-var overrides. |
