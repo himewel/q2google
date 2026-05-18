@@ -65,10 +65,7 @@ def build_backend(cfg: Q2GoogleSettings) -> SyncStateBackend:
         try:
             from q2google.state.mongo import MongoBackend
         except ImportError as exc:
-            raise ImportError(
-                "MongoBackend requires pymongo. "
-                "Install it with: pip install q2google[mongo]"
-            ) from exc
+            raise ImportError("MongoBackend requires pymongo. Install it with: pip install q2google[mongo]") from exc
         return MongoBackend(cfg.state_uri)
 
     raise ValueError(

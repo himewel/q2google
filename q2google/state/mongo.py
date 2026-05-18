@@ -90,10 +90,7 @@ class MongoBackend:
         try:
             import pymongo
         except ImportError as exc:
-            raise ImportError(
-                "MongoBackend requires pymongo. "
-                "Install it with: pip install q2google[mongo]"
-            ) from exc
+            raise ImportError("MongoBackend requires pymongo. Install it with: pip install q2google[mongo]") from exc
 
         self._client: pymongo.MongoClient[dict[str, Any]] = pymongo.MongoClient(uri)
         self._db: pymongo.database.Database[dict[str, Any]] = self._client[_db_name_from_uri(uri)]
@@ -151,13 +148,9 @@ class MongoBackend:
 
         data: dict[str, Any] = dict(meta)
 
-        data["items"] = {
-            doc["file_name"]: doc
-            for doc in self._items.find({"session_id": session_id}, {"_id": 0})
-        }
+        data["items"] = {doc["file_name"]: doc for doc in self._items.find({"session_id": session_id}, {"_id": 0})}
         data["batches"] = {
-            str(doc["batch_index"]): doc
-            for doc in self._batches.find({"session_id": session_id}, {"_id": 0})
+            str(doc["batch_index"]): doc for doc in self._batches.find({"session_id": session_id}, {"_id": 0})
         }
 
         return SessionState.from_dict(data)
