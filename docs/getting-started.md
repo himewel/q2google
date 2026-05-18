@@ -96,24 +96,21 @@ responses = await syncer.sync_date_range(
 )
 ```
 
-## Custom state backend
+## State backends
 
-Implement `SyncStateBackend` to persist sessions in any storage layer (database, object store, etc.):
+By default sessions are saved to the local filesystem under `.q2google_sessions`.
+q2google also ships a **MongoDB backend** and supports custom backends via the
+`SyncStateBackend` protocol.
 
-```python
-from q2google import SessionState, SyncStateBackend
+Set `Q2GOOGLE_STATE_URI` to switch backends without any code changes:
 
-
-class RedisBackend:
-    def load(self, session_id: str) -> SessionState | None:
-        raw = redis_client.get(session_id)
-        return SessionState.from_dict(json.loads(raw)) if raw else None
-
-    def save(self, state: SessionState) -> None:
-        redis_client.set(state.session_id, json.dumps(state.to_dict()))
+```dotenv
+# MongoDB backend (requires: pip install q2google[mongo])
+Q2GOOGLE_STATE_URI=mongodb://localhost:27017/q2google
 ```
 
-Pass it directly to `GoProToPhotosSync(state_backend=RedisBackend())`. No other changes required.
+See the [Backends guide](backends.md) for installation, configuration, collection
+schemas, and instructions for writing your own backend.
 
 ## Stage completion hook
 

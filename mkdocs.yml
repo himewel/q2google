@@ -61,6 +61,7 @@ nav:
   - Getting Started: getting-started.md
   - CLI: cli.md
   - Configuration: configuration.md
+  - Backends: backends.md
   - Architecture: ARCHITECTURE.md
   - API Reference:
     - api/index.md

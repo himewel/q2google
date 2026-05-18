@@ -16,7 +16,7 @@ from q2google.cli._logging import _configure_cli_logging
 from q2google.cli._printer import OutputFormat, SyncPrinter
 from q2google.cli._runner import _run_sync
 from q2google.config import get_settings
-from q2google.state.local import JsonFileBackend
+from q2google.state import build_backend
 
 app = typer.Typer(
     help="q2google — sync GoPro cloud media to Google Photos.",
@@ -171,9 +171,14 @@ def sync_command(
         end = _parse_iso_datetime(end_date)
 
         sid = session_id or cfg.session_id or str(uuid.uuid4())
-        resolved_state_dir = state_dir if state_dir is not None else cfg.state_dir
 
-        state_backend = JsonFileBackend(resolved_state_dir)
+        if state_dir is not None:
+            from q2google.state.local import JsonFileBackend
+
+            state_backend = JsonFileBackend(state_dir)
+        else:
+            state_backend = build_backend(cfg)
+
         existing_session = state_backend.load(sid)
 
         printer = SyncPrinter(fmt=output)
@@ -187,7 +192,7 @@ def sync_command(
                 end=end,
                 credentials=credentials if credentials is not None else cfg.credentials_path,
                 token=token if token is not None else cfg.token_path,
-                state_dir=resolved_state_dir,
+                state_backend=state_backend,
                 session_id=sid,
                 chunk_multiplier=(
                     chunk_multiplier if chunk_multiplier is not None else cfg.chunk_granularity_multiplier

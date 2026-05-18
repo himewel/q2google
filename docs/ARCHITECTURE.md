@@ -16,6 +16,8 @@ q2google moves assets from **GoPro cloud** (`gopro-api` / `AsyncGoProClient`) in
 | `q2google/gphotos/` | Low-level Library v1 HTTP (`GooglePhotosAPI`), OAuth (`GooglePhotosOAuth`), Pydantic models. |
 | `q2google/state/base.py` | `SessionState`, `ItemState`, `SyncStateBackend` protocol — persistence contract. |
 | `q2google/state/local.py` | `JsonFileBackend` — directory-tree backend; each session is a subdirectory containing `meta.json`, `items/*.json`, and `batches/*.json`. Reads legacy flat-file sessions transparently. |
+| `q2google/state/mongo.py` | `MongoBackend` — MongoDB backend; distributes each session across three collections (`sessions`, `items`, `batches`). Requires `pymongo` (`pip install q2google[mongo]`). |
+| `q2google/state/__init__.py` | `build_backend(cfg)` — factory that parses `cfg.state_uri` scheme and returns the matching `SyncStateBackend`; defaults to `JsonFileBackend` when `state_uri` is unset. |
 
 ## Sync pipeline (`sync_date_range`)
 
@@ -60,6 +62,8 @@ class CustomBackend:
 ```
 
 `SessionState.to_dict()` / `from_dict()` produce a plain dict suitable for any document store. No changes to `GoProToPhotosSync` are required.
+
+Pass the instance directly or route through `build_backend()` by registering the new scheme there.  See the [Backends guide](backends.md) for a full walkthrough.
 
 ## Documentation conventions
 

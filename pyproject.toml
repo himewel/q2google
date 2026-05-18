@@ -7,7 +7,24 @@ name = "q2google"
 version = "0.0.1"
 description = "Sync GoPro cloud media to Google Photos Library."
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+license = { file = "LICENSE" }
+authors = [{ name = "himewel", email = "welberthime@gmail.com" }]
+keywords = ["google-photos", "quik", "cloud", "api", "async", "aiohttp", "media", "gopro-api"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+]
+requires-python = ">=3.10"
 dependencies = [
     "aiohttp~=3.11.11",
     "aiofiles~=25.1.0",
@@ -28,6 +45,9 @@ docs = [
     "mkdocs-material>=9",
     "mkdocstrings[python]>=0.27",
 ]
+mongo = [
+    "pymongo>=4",
+]
 
 [dependency-groups]
 dev = [
@@ -35,6 +55,8 @@ dev = [
     "mike>=2",
     "mkdocs-material>=9",
     "mkdocstrings[python]>=0.27",
+    "mongomock>=4",
+    "pymongo>=4",
     "pytest>=8",
     "pytest-asyncio>=1",
     "pytest-cov>=6",
