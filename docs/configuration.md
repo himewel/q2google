@@ -71,15 +71,3 @@ settings = Q2GoogleSettings(
 ```
 
 See [`q2google.config`](api/config.md) in the API reference for all fields and their defaults.
-
-## Local development with gopro-api
-
-When developing both repositories side by side, q2google can depend on the sibling checkout via uv:
-
-```toml
-# pyproject.toml (already configured in this repo)
-[tool.uv.sources]
-gopro-api = { path = "../gopro-api", editable = true }
-```
-
-Run `uv sync` in q2google after changing gopro-api; no PyPI publish is required. Remove or comment out `[tool.uv.sources]` before releasing q2google to consumers who install from PyPI only.

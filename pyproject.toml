@@ -42,9 +42,6 @@ dev = [
     "taskipy>=1",
 ]
 
-[tool.uv.sources]
-gopro-api = { path = "../gopro-api", editable = true }
-
 [tool.ruff]
 line-length = 120
 
