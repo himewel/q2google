@@ -1043,7 +1043,7 @@
 </span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span>--log-level<span class="w">  </span>DEBUG
 </span></code></pre></div>
 <h2 id="environment-variable-precedence">Environment variable precedence<a class="headerlink" href="#environment-variable-precedence" title="Permanent link">&para;</a></h2>
-<p>All options can be set via environment variables. The <code>Q2GOOGLE_</code> prefix is used for every setting except <code>GP_ACCESS_TOKEN</code> (read directly by <code>AsyncGoProClient</code>). CLI flags always override environment variables.</p>
+<p>All options can be set via environment variables with the <code>Q2GOOGLE_</code> prefix. The GoPro token also accepts <code>GP_ACCESS_TOKEN</code> or <code>Q2GOOGLE_GOPRO_ACCESS_TOKEN</code> (see <a href="../configuration/">Configuration</a>). CLI flags always override environment variables.</p>
 <p>q2google also reads a <code>.env</code> file from the working directory via <code>pydantic-settings</code>. See <a href="../configuration/">Configuration</a> for the full reference.</p>
 
 
