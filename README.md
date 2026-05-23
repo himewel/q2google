@@ -13,7 +13,7 @@ Sync media from **GoPro cloud** into **Google Photos** for a capture date range 
 ## Requirements
 
 - Python **3.12 or 3.13** (3.14 is excluded until dependent wheels catch up)
-- **`GP_ACCESS_TOKEN`** environment variable — GoPro cloud access token (required by `AsyncGoProClient`)
+- **`GP_ACCESS_TOKEN`** or **`Q2GOOGLE_GOPRO_ACCESS_TOKEN`** — GoPro cloud access token (loaded by `Q2GoogleSettings` and passed to `AsyncGoProClient`)
 - Google OAuth **installed app** credentials (`client_secret.json` from Google Cloud Console)
 - A writable path for the user token (`token.json` by default)
 
@@ -50,6 +50,7 @@ from q2google import (
     GooglePhotosClient,
     GooglePhotosOAuth,
     JsonFileBackend,
+    get_settings,
 )
 from q2google.gphotos.api import GooglePhotosAPI
 from q2google.gphotos.models import PhotosScopes
@@ -62,8 +63,10 @@ async def main() -> None:
         token_file="token.json",
     )
 
+    cfg = get_settings()
+
     async with (
-        AsyncGoProClient() as gopro,
+        AsyncGoProClient(access_token=cfg.gopro_access_token) as gopro,
         GooglePhotosAPI(credentials=oauth) as api,
     ):
         photos = GooglePhotosClient(api=api)
@@ -202,6 +205,7 @@ from q2google import (
     GooglePhotosClient,
     GooglePhotosOAuth,
     JsonFileBackend,
+    get_settings,
 )
 from q2google.gphotos.api import GooglePhotosAPI
 from q2google.gphotos.models import PhotosScopes
@@ -214,8 +218,10 @@ async def main() -> None:
         token_file="token.json",
     )
 
+    cfg = get_settings()
+
     async with (
-        AsyncGoProClient() as gopro,
+        AsyncGoProClient(access_token=cfg.gopro_access_token) as gopro,
         GooglePhotosAPI(credentials=oauth) as api,
     ):
         photos = GooglePhotosClient(api=api)
@@ -323,7 +329,8 @@ All CLI options have environment-variable equivalents. `Q2GoogleSettings` (Pydan
 
 | Variable | Purpose |
 |----------|---------|
-| `GP_ACCESS_TOKEN` | **GoPro cloud access token** — read by `AsyncGoProClient`; required for discovery |
+| `GP_ACCESS_TOKEN` | **GoPro cloud access token** — alias accepted by `Q2GoogleSettings`; passed to `AsyncGoProClient` |
+| `Q2GOOGLE_GOPRO_ACCESS_TOKEN` | **GoPro cloud access token** — prefixed alternative to `GP_ACCESS_TOKEN` |
 | `Q2GOOGLE_CREDENTIALS_PATH` | Google OAuth client secrets JSON path |
 | `Q2GOOGLE_TOKEN_PATH` | Authorized user token path |
 | `Q2GOOGLE_STATE_DIR` | JSON session state directory |

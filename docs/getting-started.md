@@ -3,7 +3,7 @@
 ## Requirements
 
 - Python **3.12 or 3.13** (3.14 is excluded until dependent wheels catch up)
-- **`GP_ACCESS_TOKEN`** environment variable — your GoPro cloud access token
+- **`GP_ACCESS_TOKEN`** or **`Q2GOOGLE_GOPRO_ACCESS_TOKEN`** — your GoPro cloud access token (loaded by `Q2GoogleSettings` and passed to `AsyncGoProClient`)
 - Google OAuth **installed-app** credentials (`client_secret.json` from [Google Cloud Console](https://console.cloud.google.com))
 - A writable path for the authorized user token (`token.json` by default)
 
@@ -48,6 +48,7 @@ from q2google import (
     GooglePhotosClient,
     GooglePhotosOAuth,
     JsonFileBackend,
+    get_settings,
 )
 from q2google.gphotos.api import GooglePhotosAPI
 from q2google.gphotos.models import PhotosScopes
@@ -60,8 +61,10 @@ async def main() -> None:
         token_file="token.json",
     )
 
+    cfg = get_settings()
+
     async with (
-        AsyncGoProClient() as gopro,
+        AsyncGoProClient(access_token=cfg.gopro_access_token) as gopro,
         GooglePhotosAPI(credentials=oauth) as api,
     ):
         photos = GooglePhotosClient(api=api)

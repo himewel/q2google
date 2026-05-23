@@ -74,6 +74,7 @@ async def _run_sync(
 
     async with (
         AsyncGoProClient(
+            access_token=cfg.gopro_access_token,
             max_items=max_items,
             prefer_height=prefer_height,
         ) as gopro,

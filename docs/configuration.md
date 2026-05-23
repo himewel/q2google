@@ -4,9 +4,12 @@ All settings are managed by `Q2GoogleSettings` — a [Pydantic `BaseSettings`](h
 
 ## GoPro credentials
 
+q2google loads the GoPro token into `Q2GoogleSettings.gopro_access_token` and passes it explicitly to `AsyncGoProClient`. Either variable below satisfies the requirement:
+
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GP_ACCESS_TOKEN` | **Yes** | GoPro cloud access token; read directly by `AsyncGoProClient`. |
+| `GP_ACCESS_TOKEN` | **Yes** (or alias below) | GoPro cloud access token. Accepted as a legacy alias for compatibility with standalone `gopro-api` usage. |
+| `Q2GOOGLE_GOPRO_ACCESS_TOKEN` | **Yes** (or alias above) | Prefixed alternative; useful when you want all q2google settings under the `Q2GOOGLE_` namespace. |
 
 ## Google OAuth
 
@@ -44,6 +47,7 @@ q2google loads a `.env` file from the current working directory automatically. E
 
 ```dotenv
 GP_ACCESS_TOKEN=eyJ...
+# or: Q2GOOGLE_GOPRO_ACCESS_TOKEN=eyJ...
 
 Q2GOOGLE_CREDENTIALS_PATH=secrets/client_secret.json
 Q2GOOGLE_TOKEN_PATH=secrets/token.json
