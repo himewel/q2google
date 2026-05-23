@@ -9,7 +9,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #: Maximum ``newMediaItems`` per ``mediaItems:batchCreate`` request (Google Photos Library API).
@@ -29,6 +29,7 @@ class Q2GoogleSettings(BaseSettings):
         token_path: Path where the authorized user refresh token is stored.
         state_dir: Directory containing one JSON file per sync session.
         session_id: Optional default session identifier when the CLI omits ``--session-id``.
+        gopro_access_token: GoPro cloud access token for discovery and CDN URL resolution.
         gopro_max_items: Upper bound passed to GoPro cloud listing.
         gopro_prefer_height: Preferred pixel height when resolving GoPro CDN assets.
         google_photos_timeout_seconds: Total timeout per Library API HTTP request.
@@ -47,6 +48,7 @@ class Q2GoogleSettings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
     credentials_path: Path = Field(
@@ -64,6 +66,10 @@ class Q2GoogleSettings(BaseSettings):
     session_id: str | None = Field(
         default=None,
         description="Default session id when not passed explicitly (e.g. CLI --session-id).",
+    )
+    gopro_access_token: str = Field(
+        description="GoPro cloud access token (env: ``GP_ACCESS_TOKEN`` or ``Q2GOOGLE_GOPRO_ACCESS_TOKEN``).",
+        validation_alias=AliasChoices("GP_ACCESS_TOKEN", "Q2GOOGLE_GOPRO_ACCESS_TOKEN"),
     )
 
     gopro_max_items: int = Field(default=2000, ge=1, description="Cap for list_media_items.")

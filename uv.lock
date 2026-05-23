@@ -619,18 +619,30 @@ wheels = [
 
 [[package]]
 name = "gopro-api"
-version = "0.0.7"
-source = { registry = "https://pypi.org/simple" }
+version = "0.0.9"
+source = { editable = "../gopro-api" }
 dependencies = [
     { name = "aiohttp" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "requests" },
+    { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/46/b029b0038ea48040225a38afacf303cf98e3b354b6095e5e6781b79a2b7b/gopro_api-0.0.7.tar.gz", hash = "sha256:f9023773875e726bd4c8e0d158effb919c8b972485c4750f56577629e4629ef7", size = 17812, upload-time = "2026-04-26T22:19:54.658Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e9/44/0a0c4bffced2f458f7d9aaefae3c47544b82864e8c6c981e3bc7ce97eafc/gopro_api-0.0.7-py3-none-any.whl", hash = "sha256:888d3a860edf1049567dc01a69cf7421d4b559e2b6883f7775376b4a25ced1d3", size = 18312, upload-time = "2026-04-26T22:19:53.393Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "aiohttp", specifier = "~=3.11.14" },
+    { name = "black", marker = "extra == 'dev'", specifier = "~=24.10.0" },
+    { name = "mike", marker = "extra == 'docs'", specifier = ">=2.1" },
+    { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
+    { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=0.27" },
+    { name = "pydantic", specifier = "~=2.10.6" },
+    { name = "pydantic-settings", specifier = "~=2.14" },
+    { name = "pylint", marker = "extra == 'dev'", specifier = "~=3.3.0" },
+    { name = "requests", specifier = "~=2.32.3" },
+    { name = "typer", specifier = ">=0.12" },
 ]
+provides-extras = ["dev", "docs"]
 
 [[package]]
 name = "griffelib"
@@ -1503,7 +1515,7 @@ requires-dist = [
     { name = "aiofiles", specifier = "~=25.1.0" },
     { name = "aiohttp", specifier = "~=3.11.11" },
     { name = "google-auth-oauthlib", specifier = "~=1.3.0" },
-    { name = "gopro-api", specifier = "~=0.0.7" },
+    { name = "gopro-api", editable = "../gopro-api" },
     { name = "mike", marker = "extra == 'docs'", specifier = ">=2" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9" },
     { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=0.27" },

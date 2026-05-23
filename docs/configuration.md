@@ -4,9 +4,12 @@ All settings are managed by `Q2GoogleSettings` — a [Pydantic `BaseSettings`](h
 
 ## GoPro credentials
 
+q2google loads the GoPro token into `Q2GoogleSettings.gopro_access_token` and passes it explicitly to `AsyncGoProClient`. Either variable below satisfies the requirement:
+
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GP_ACCESS_TOKEN` | **Yes** | GoPro cloud access token; read directly by `AsyncGoProClient`. |
+| `GP_ACCESS_TOKEN` | **Yes** (or alias below) | GoPro cloud access token. Accepted as a legacy alias for compatibility with standalone `gopro-api` usage. |
+| `Q2GOOGLE_GOPRO_ACCESS_TOKEN` | **Yes** (or alias above) | Prefixed alternative; useful when you want all q2google settings under the `Q2GOOGLE_` namespace. |
 
 ## Google OAuth
 
@@ -44,6 +47,7 @@ q2google loads a `.env` file from the current working directory automatically. E
 
 ```dotenv
 GP_ACCESS_TOKEN=eyJ...
+# or: Q2GOOGLE_GOPRO_ACCESS_TOKEN=eyJ...
 
 Q2GOOGLE_CREDENTIALS_PATH=secrets/client_secret.json
 Q2GOOGLE_TOKEN_PATH=secrets/token.json
@@ -67,3 +71,15 @@ settings = Q2GoogleSettings(
 ```
 
 See [`q2google.config`](api/config.md) in the API reference for all fields and their defaults.
+
+## Local development with gopro-api
+
+When developing both repositories side by side, q2google can depend on the sibling checkout via uv:
+
+```toml
+# pyproject.toml (already configured in this repo)
+[tool.uv.sources]
+gopro-api = { path = "../gopro-api", editable = true }
+```
+
+Run `uv sync` in q2google after changing gopro-api; no PyPI publish is required. Remove or comment out `[tool.uv.sources]` before releasing q2google to consumers who install from PyPI only.
