@@ -1,11 +1,19 @@
 # q2google
 
+[![CI](https://github.com/himewel/q2google/actions/workflows/ci.yml/badge.svg)](https://github.com/himewel/q2google/actions/workflows/ci.yml)
+[![Release](https://github.com/himewel/q2google/actions/workflows/release.yml/badge.svg)](https://github.com/himewel/q2google/actions/workflows/release.yml)
+[![PyPI version](https://img.shields.io/pypi/v/q2google)](https://pypi.org/project/q2google/)
+[![Python versions](https://img.shields.io/pypi/pyversions/q2google)](https://pypi.org/project/q2google/)
+[![GitHub release](https://img.shields.io/github/v/release/himewel/q2google)](https://github.com/himewel/q2google/releases/latest)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://himewel.github.io/q2google/)
+[![License](https://img.shields.io/github/license/himewel/q2google)](LICENSE)
+
 Sync media from **GoPro cloud** into **Google Photos** for a capture date range with **resumable session state**.
 
 ## Requirements
 
 - Python **3.12 or 3.13** (3.14 is excluded until dependent wheels catch up)
-- **`GP_ACCESS_TOKEN`** environment variable — GoPro cloud access token (required by `AsyncGoProClient`)
+- **`GP_ACCESS_TOKEN`** or **`Q2GOOGLE_GOPRO_ACCESS_TOKEN`** — GoPro cloud access token (loaded by `Q2GoogleSettings` and passed to `AsyncGoProClient`)
 - Google OAuth **installed app** credentials (`client_secret.json` from Google Cloud Console)
 - A writable path for the user token (`token.json` by default)
 
@@ -42,6 +50,7 @@ from q2google import (
     GooglePhotosClient,
     GooglePhotosOAuth,
     JsonFileBackend,
+    get_settings,
 )
 from q2google.gphotos.api import GooglePhotosAPI
 from q2google.gphotos.models import PhotosScopes
@@ -54,8 +63,10 @@ async def main() -> None:
         token_file="token.json",
     )
 
+    cfg = get_settings()
+
     async with (
-        AsyncGoProClient() as gopro,
+        AsyncGoProClient(access_token=cfg.gopro_access_token) as gopro,
         GooglePhotosAPI(credentials=oauth) as api,
     ):
         photos = GooglePhotosClient(api=api)
@@ -194,6 +205,7 @@ from q2google import (
     GooglePhotosClient,
     GooglePhotosOAuth,
     JsonFileBackend,
+    get_settings,
 )
 from q2google.gphotos.api import GooglePhotosAPI
 from q2google.gphotos.models import PhotosScopes
@@ -206,8 +218,10 @@ async def main() -> None:
         token_file="token.json",
     )
 
+    cfg = get_settings()
+
     async with (
-        AsyncGoProClient() as gopro,
+        AsyncGoProClient(access_token=cfg.gopro_access_token) as gopro,
         GooglePhotosAPI(credentials=oauth) as api,
     ):
         photos = GooglePhotosClient(api=api)
@@ -315,7 +329,8 @@ All CLI options have environment-variable equivalents. `Q2GoogleSettings` (Pydan
 
 | Variable | Purpose |
 |----------|---------|
-| `GP_ACCESS_TOKEN` | **GoPro cloud access token** — read by `AsyncGoProClient`; required for discovery |
+| `GP_ACCESS_TOKEN` | **GoPro cloud access token** — alias accepted by `Q2GoogleSettings`; passed to `AsyncGoProClient` |
+| `Q2GOOGLE_GOPRO_ACCESS_TOKEN` | **GoPro cloud access token** — prefixed alternative to `GP_ACCESS_TOKEN` |
 | `Q2GOOGLE_CREDENTIALS_PATH` | Google OAuth client secrets JSON path |
 | `Q2GOOGLE_TOKEN_PATH` | Authorized user token path |
 | `Q2GOOGLE_STATE_DIR` | JSON session state directory |

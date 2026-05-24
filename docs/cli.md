@@ -71,6 +71,6 @@ q2google sync \
 
 ## Environment variable precedence
 
-All options can be set via environment variables. The `Q2GOOGLE_` prefix is used for every setting except `GP_ACCESS_TOKEN` (read directly by `AsyncGoProClient`). CLI flags always override environment variables.
+All options can be set via environment variables with the `Q2GOOGLE_` prefix. The GoPro token also accepts `GP_ACCESS_TOKEN` or `Q2GOOGLE_GOPRO_ACCESS_TOKEN` (see [Configuration](configuration.md)). CLI flags always override environment variables.
 
 q2google also reads a `.env` file from the working directory via `pydantic-settings`. See [Configuration](configuration.md) for the full reference.
