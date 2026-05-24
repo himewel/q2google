@@ -15,8 +15,7 @@ from q2google.gphotos.auth import GooglePhotosOAuth
 from q2google.gphotos.models import PhotosScopes
 from q2google.metrics import SyncTransferMetrics
 from q2google.photos import GooglePhotosClient, MediaItemBatchCreateResponse
-from q2google.state.base import SessionState, StageKey
-from q2google.state.local import JsonFileBackend
+from q2google.state.base import SessionState, StageKey, SyncStateBackend
 from q2google.sync import GoProToPhotosSync
 
 _STAGE_STEP: dict[str, int] = {"discovery": 1, "transfer": 2, "create": 3}
@@ -30,7 +29,7 @@ async def _run_sync(
     end: datetime,
     credentials: Path,
     token: Path,
-    state_dir: Path,
+    state_backend: SyncStateBackend,
     session_id: str,
     chunk_multiplier: int,
     max_items: int,
@@ -47,7 +46,8 @@ async def _run_sync(
         end: Capture window end for new sessions (ignored when resuming existing state).
         credentials: OAuth client secrets JSON path.
         token: Path to store the user OAuth token.
-        state_dir: Root directory for :class:`~q2google.state.local.JsonFileBackend` session files.
+        state_backend: Pre-built :class:`~q2google.state.base.SyncStateBackend` from
+            :func:`~q2google.state.build_backend`; passed in so callers can use it before and after the run.
         session_id: Stable session key used for load/resume.
         chunk_multiplier: Resumable upload chunk multiplier for
             :class:`~q2google.photos.GooglePhotosClient`.
@@ -70,7 +70,20 @@ async def _run_sync(
         token_file=str(token),
     )
 
-    logging.debug("session_id=%s state_dir=%s", session_id, state_dir.resolve())
+    if cfg.state_uri is not None:
+        logging.debug(
+            "session_id=%s state_uri=%s backend=%s",
+            session_id,
+            cfg.state_uri,
+            type(state_backend).__name__,
+        )
+    else:
+        logging.debug(
+            "session_id=%s state_dir=%s backend=%s",
+            session_id,
+            cfg.state_dir.resolve(),
+            type(state_backend).__name__,
+        )
 
     async with (
         AsyncGoProClient(
@@ -84,7 +97,6 @@ async def _run_sync(
         ) as google_photos_api,
     ):
         photos = GooglePhotosClient(google_photos_api, chunk_granularity_multiplier=chunk_multiplier)
-        state_backend = JsonFileBackend(state_dir)
         syncer = GoProToPhotosSync(gopro, photos, state_backend=state_backend, settings=cfg)
 
         transfer_metrics = SyncTransferMetrics()

@@ -64,3 +64,19 @@ jobs:
 
       - name: Build MkDocs site (--strict)
         run: uv run mkdocs build --strict
+
+  test:
+    name: Test (backend matrix via mongomock)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package and dev tools
+        run: uv sync --group dev
+
+      - name: Run tests (json + mongo backends)
+        run: uv run task test

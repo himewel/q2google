@@ -22,7 +22,8 @@ q2google loads the GoPro token into `Q2GoogleSettings.gopro_access_token` and pa
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `Q2GOOGLE_STATE_DIR` | `.q2google_sessions` | Root directory for per-session state; each session is stored as a subdirectory containing `meta.json`, `items/`, and `batches/`. |
+| `Q2GOOGLE_STATE_URI` | _(absent)_ | Backend URI whose scheme selects the storage engine. `mongodb://host:port/db` activates MongoBackend; leave unset to use the filesystem backend. Takes precedence over `Q2GOOGLE_STATE_DIR` when set. See [Backends](backends.md) for details. |
+| `Q2GOOGLE_STATE_DIR` | `.q2google_sessions` | Root directory for the filesystem backend; each session is stored as a subdirectory containing `meta.json`, `items/`, and `batches/`. Ignored when `Q2GOOGLE_STATE_URI` is set. |
 | `Q2GOOGLE_SESSION_ID` | _(auto)_ | Default session identifier when `--session-id` is omitted from the CLI. |
 
 ## Transfer tuning

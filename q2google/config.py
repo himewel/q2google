@@ -27,7 +27,8 @@ class Q2GoogleSettings(BaseSettings):
     Attributes:
         credentials_path: Path to the OAuth client secrets JSON (installed application).
         token_path: Path where the authorized user refresh token is stored.
-        state_dir: Directory containing one JSON file per sync session.
+        state_dir: Directory containing one JSON file per sync session (used when ``state_uri`` is unset).
+        state_uri: Backend URI whose scheme selects the storage engine; overrides ``state_dir`` when set.
         session_id: Optional default session identifier when the CLI omits ``--session-id``.
         gopro_access_token: GoPro cloud access token for discovery and CDN URL resolution.
         gopro_max_items: Upper bound passed to GoPro cloud listing.
@@ -61,7 +62,16 @@ class Q2GoogleSettings(BaseSettings):
     )
     state_dir: Path = Field(
         default=Path(".q2google_sessions"),
-        description="JSON session state directory for resume checkpoints.",
+        description="JSON session state directory for resume checkpoints (used when state_uri is not set).",
+    )
+    state_uri: str | None = Field(
+        default=None,
+        description=(
+            "Backend URI that determines the storage engine. "
+            "The URI scheme selects the backend: ``mongodb://host:port/db`` uses MongoBackend; "
+            "absent falls back to JsonFileBackend(state_dir). "
+            "Example: ``mongodb://localhost:27017/q2google``."
+        ),
     )
     session_id: str | None = Field(
         default=None,

@@ -14,7 +14,12 @@ _NOISY_LOGGER_NAMES: tuple[str, ...] = (
 )
 
 
-def _configure_cli_logging(*, explicit_level: str | None, verbose: bool) -> None:
+def _configure_cli_logging(
+    *,
+    explicit_level: str | None,
+    verbose: bool,
+    settings_level: str | None = None,
+) -> None:
     """Configure root logging for Typer; quiet by default, optional verbose or explicit level.
 
     Third-party libraries stay at WARNING unless root level is DEBUG.
@@ -22,11 +27,14 @@ def _configure_cli_logging(*, explicit_level: str | None, verbose: bool) -> None
     Args:
         explicit_level: ``--log-level`` value when provided.
         verbose: ``True`` when ``-v`` / ``--verbose`` is set.
+        settings_level: ``Q2GOOGLE_LOG_LEVEL`` when neither explicit level nor verbose is set.
     """
     if explicit_level is not None:
         root_level = getattr(logging, explicit_level.upper(), logging.WARNING)
     elif verbose:
         root_level = logging.INFO
+    elif settings_level is not None:
+        root_level = getattr(logging, settings_level.upper(), logging.WARNING)
     else:
         root_level = logging.WARNING
 
