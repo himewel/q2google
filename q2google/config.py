@@ -27,7 +27,7 @@ class Q2GoogleSettings(BaseSettings):
     Attributes:
         credentials_path: Path to the OAuth client secrets JSON (installed application).
         token_path: Path where the authorized user refresh token is stored.
-        state_dir: Directory containing one JSON file per sync session (filesystem backend fallback).
+        state_dir: Directory containing one JSON file per sync session (used when ``state_uri`` is unset).
         state_uri: Backend URI whose scheme selects the storage engine; overrides ``state_dir`` when set.
         session_id: Optional default session identifier when the CLI omits ``--session-id``.
         gopro_access_token: GoPro cloud access token for discovery and CDN URL resolution.

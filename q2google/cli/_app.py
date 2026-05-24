@@ -15,6 +15,7 @@ from rich.console import Console
 from q2google.cli._logging import _configure_cli_logging
 from q2google.cli._printer import OutputFormat, SyncPrinter
 from q2google.cli._runner import _run_sync
+from q2google.cli._settings import sync_settings
 from q2google.config import get_settings
 from q2google.state import build_backend
 
@@ -92,7 +93,10 @@ def sync_command(
     state_dir: Path | None = typer.Option(
         None,
         "--state-dir",
-        help="JSON session root; default from [cyan]Q2GOOGLE_STATE_DIR[/cyan] / settings.",
+        help=(
+            "Filesystem session root when [cyan]Q2GOOGLE_STATE_URI[/cyan] is unset; "
+            "default from [cyan]Q2GOOGLE_STATE_DIR[/cyan] / settings."
+        ),
     ),
     session_id: str | None = typer.Option(
         None,
@@ -152,7 +156,7 @@ def sync_command(
         end_date: ISO end of the GoPro capture window (required).
         credentials: OAuth secrets path; defaults from settings when omitted.
         token: User token path; defaults from settings when omitted.
-        state_dir: Session JSON directory; defaults from settings when omitted.
+        state_dir: Filesystem session root when ``state_uri`` is unset; defaults from settings.
         session_id: Explicit resume id; otherwise settings or a new UUID.
         chunk_multiplier: Upload chunk multiplier; defaults from settings when omitted.
         max_items: GoPro listing cap; defaults from settings when omitted.
@@ -165,20 +169,19 @@ def sync_command(
     """
     try:
         cfg = get_settings()
-        _configure_cli_logging(explicit_level=log_level, verbose=verbose)
+        sync_cfg = sync_settings(cfg, state_dir=state_dir)
+        _configure_cli_logging(
+            explicit_level=log_level,
+            verbose=verbose,
+            settings_level=cfg.log_level,
+        )
 
         start = _parse_iso_datetime(start_date)
         end = _parse_iso_datetime(end_date)
 
         sid = session_id or cfg.session_id or str(uuid.uuid4())
 
-        if state_dir is not None:
-            from q2google.state.local import JsonFileBackend
-
-            state_backend = JsonFileBackend(state_dir)
-        else:
-            state_backend = build_backend(cfg)
-
+        state_backend = build_backend(sync_cfg)
         existing_session = state_backend.load(sid)
 
         printer = SyncPrinter(fmt=output)
@@ -187,7 +190,7 @@ def sync_command(
         t0 = time.perf_counter()
         responses, transfer_metrics = asyncio.run(
             _run_sync(
-                cfg=cfg,
+                cfg=sync_cfg,
                 start=start,
                 end=end,
                 credentials=credentials if credentials is not None else cfg.credentials_path,
