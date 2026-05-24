@@ -16,7 +16,7 @@
         <link rel="prev" href="../cli/">
       
       
-        <link rel="next" href="../ARCHITECTURE/">
+        <link rel="next" href="../backends/">
       
       
         
@@ -504,6 +504,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ARCHITECTURE/" class="md-nav__link">
         
   
@@ -555,7 +582,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -577,14 +604,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -924,9 +951,14 @@
 </thead>
 <tbody>
 <tr>
+<td><code>Q2GOOGLE_STATE_URI</code></td>
+<td><em>(absent)</em></td>
+<td>Backend URI whose scheme selects the storage engine. <code>mongodb://host:port/db</code> activates MongoBackend; leave unset to use the filesystem backend. Takes precedence over <code>Q2GOOGLE_STATE_DIR</code> when set. See <a href="../backends/">Backends</a> for details.</td>
+</tr>
+<tr>
 <td><code>Q2GOOGLE_STATE_DIR</code></td>
 <td><code>.q2google_sessions</code></td>
-<td>Root directory for per-session state; each session is stored as a subdirectory containing <code>meta.json</code>, <code>items/</code>, and <code>batches/</code>.</td>
+<td>Root directory for the filesystem backend; each session is stored as a subdirectory containing <code>meta.json</code>, <code>items/</code>, and <code>batches/</code>. Ignored when <code>Q2GOOGLE_STATE_URI</code> is set.</td>
 </tr>
 <tr>
 <td><code>Q2GOOGLE_SESSION_ID</code></td>

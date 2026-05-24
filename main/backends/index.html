@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://himewel.github.io/q2google/main/cli/">
+        <link rel="canonical" href="https://himewel.github.io/q2google/main/backends/">
       
       
-        <link rel="prev" href="../getting-started/">
+        <link rel="prev" href="../configuration/">
       
       
-        <link rel="next" href="../configuration/">
+        <link rel="next" href="../ARCHITECTURE/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>CLI - q2google</title>
+        <title>Backends - q2google</title>
       
     
     
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cli-reference" class="md-skip">
+        <a href="#state-backends" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              CLI
+              Backends
             
           </span>
         </div>
@@ -323,37 +323,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
         
   
   
@@ -369,120 +342,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#q2google-sync" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        q2google sync
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="q2google sync">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#required-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Required options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#authentication-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Authentication options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#session-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Session options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#transfer-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transfer options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#behaviour-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Behaviour options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Examples
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#environment-variable-precedence" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment variable precedence
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -518,10 +377,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../backends/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -537,6 +423,148 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#filesystem-backend-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filesystem backend (default)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filesystem backend (default)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mongodb-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MongoDB backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collection-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collection schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -814,22 +842,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#q2google-sync" class="md-nav__link">
+  <a href="#filesystem-backend-default" class="md-nav__link">
     <span class="md-ellipsis">
       
-        q2google sync
+        Filesystem backend (default)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="q2google sync">
+    <nav class="md-nav" aria-label="Filesystem backend (default)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#required-options" class="md-nav__link">
+  <a href="#layout" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Required options
+        Layout
       
     </span>
   </a>
@@ -837,10 +865,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#authentication-options" class="md-nav__link">
+  <a href="#configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Authentication options
+        Configuration
       
     </span>
   </a>
@@ -848,43 +876,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#session-options" class="md-nav__link">
+  <a href="#when-to-use" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Session options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#transfer-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transfer options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#behaviour-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Behaviour options
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Examples
+        When to use
       
     </span>
   </a>
@@ -897,10 +892,71 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#environment-variable-precedence" class="md-nav__link">
+  <a href="#mongodb-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environment variable precedence
+        MongoDB backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MongoDB backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collection-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collection schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom backend
       
     </span>
   </a>
@@ -927,151 +983,292 @@
   
 
 
-<h1 id="cli-reference">CLI Reference<a class="headerlink" href="#cli-reference" title="Permanent link">&para;</a></h1>
-<h2 id="q2google-sync"><code>q2google sync</code><a class="headerlink" href="#q2google-sync" title="Permanent link">&para;</a></h2>
-<p>Sync GoPro cloud media to Google Photos for a capture date range.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>q2google sync [OPTIONS]
+<h1 id="state-backends">State Backends<a class="headerlink" href="#state-backends" title="Permanent link">&para;</a></h1>
+<p>q2google persists every sync session through a <code>SyncStateBackend</code> — a small two-method
+protocol that decouples the sync pipeline from any particular storage engine.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">SyncStateBackend</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">SessionState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 </span></code></pre></div>
-<h3 id="required-options">Required options<a class="headerlink" href="#required-options" title="Permanent link">&para;</a></h3>
+<p>The active backend is selected at startup by the <code>Q2GOOGLE_STATE_URI</code> environment variable.
+When the variable is absent the filesystem backend is used by default, so existing setups
+require no changes.</p>
+<pre class="mermaid"><code>flowchart TD
+    env["Q2GOOGLE_STATE_URI"]
+    factory["build_backend(cfg)"]
+    json["JsonFileBackend\n(default)"]
+    mongo["MongoBackend\n(mongodb://)"]
+    future["Future backends\n(redis://, postgresql://…)"]
+
+    env --&gt;|absent| factory
+    env --&gt;|set| factory
+    factory --&gt;|"no URI"| json
+    factory --&gt;|"mongodb://"| mongo
+    factory --&gt;|"new scheme"| future</code></pre>
+<hr />
+<h2 id="filesystem-backend-default">Filesystem backend (default)<a class="headerlink" href="#filesystem-backend-default" title="Permanent link">&para;</a></h2>
+<p>No extra packages required.  Each session is stored as a directory of JSON files under
+<code>Q2GOOGLE_STATE_DIR</code> (default <code>.q2google_sessions</code>).</p>
+<h3 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>.q2google_sessions/
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  {session_id}/
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    meta.json              # session metadata + stage statuses
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    items/
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>      {file_name}.json     # one file per ItemState
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    batches/
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>      {batch_index}.json   # one file per BatchState
+</span></code></pre></div>
+<p>Each file is written atomically via a temp file and <code>os.replace</code>, so a crash mid-save
+never corrupts an existing checkpoint.</p>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Option</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--start-date DATE</code></td>
-<td>First capture date to include (<code>YYYY-MM-DD</code>).</td>
-</tr>
-<tr>
-<td><code>--end-date DATE</code></td>
-<td>Last capture date to include (<code>YYYY-MM-DD</code>).</td>
-</tr>
-</tbody>
-</table>
-<h3 id="authentication-options">Authentication options<a class="headerlink" href="#authentication-options" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Env var</th>
+<th>Variable</th>
 <th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>--credentials PATH</code></td>
-<td><code>Q2GOOGLE_CREDENTIALS_PATH</code></td>
-<td><code>client_secret.json</code></td>
-<td>Google OAuth installed-app client secrets JSON.</td>
-</tr>
-<tr>
-<td><code>--token PATH</code></td>
-<td><code>Q2GOOGLE_TOKEN_PATH</code></td>
-<td><code>token.json</code></td>
-<td>Authorized user token file (created on first run).</td>
-</tr>
-</tbody>
-</table>
-<h3 id="session-options">Session options<a class="headerlink" href="#session-options" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Env var</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--state-dir PATH</code></td>
 <td><code>Q2GOOGLE_STATE_DIR</code></td>
 <td><code>.q2google_sessions</code></td>
-<td>Root directory for per-session state; each session is stored as a subdirectory containing <code>meta.json</code>, <code>items/</code>, and <code>batches/</code>.</td>
+<td>Root directory for session subdirectories.</td>
 </tr>
 <tr>
-<td><code>--session-id TEXT</code></td>
-<td><code>Q2GOOGLE_SESSION_ID</code></td>
-<td>auto-generated</td>
-<td>Stable identifier; reuse to resume an interrupted run.</td>
+<td><code>Q2GOOGLE_STATE_URI</code></td>
+<td><em>(absent)</em></td>
+<td>Leave unset to use this backend.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="transfer-options">Transfer options<a class="headerlink" href="#transfer-options" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Env var</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--batch-size INT</code></td>
-<td><code>Q2GOOGLE_SYNC_BATCH_SIZE</code></td>
-<td><code>10</code></td>
-<td>Items per transfer cycle for <strong>new</strong> sessions (ignored when resuming — persisted value wins).</td>
-</tr>
-</tbody>
-</table>
-<h3 id="behaviour-options">Behaviour options<a class="headerlink" href="#behaviour-options" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Env var</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--fail-fast / --no-fail-fast</code></td>
-<td><code>Q2GOOGLE_FAIL_FAST</code></td>
-<td><code>false</code></td>
-<td>Stop on first error after persisting state.</td>
-</tr>
-<tr>
-<td><code>--log-level LEVEL</code></td>
-<td><code>Q2GOOGLE_LOG_LEVEL</code></td>
-<td><code>INFO</code></td>
-<td>Logging verbosity (<code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>).</td>
-</tr>
-</tbody>
-</table>
-<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Minimal — sync a single day</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>q2google<span class="w"> </span>sync<span class="w"> </span>--start-date<span class="w"> </span><span class="m">2026</span>-01-08<span class="w"> </span>--end-date<span class="w"> </span><span class="m">2026</span>-01-08
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Custom credentials and token paths</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>q2google<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--start-date<span class="w"> </span><span class="m">2026</span>-01-01<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>--end-date<span class="w">   </span><span class="m">2026</span>-01-31<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--credentials<span class="w"> </span>/secrets/client_secret.json<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>--token<span class="w">       </span>/secrets/token.json
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Resume a named session (start/end dates are ignored)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>q2google<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span>--start-date<span class="w"> </span><span class="m">2026</span>-01-01<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span>--end-date<span class="w">   </span><span class="m">2026</span>-01-31<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span>--session-id<span class="w"> </span>january-2026
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Verbose output with a custom state directory</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>q2google<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span>--start-date<span class="w"> </span><span class="m">2026</span>-01-08<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span>--end-date<span class="w">   </span><span class="m">2026</span>-01-09<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span>--state-dir<span class="w">  </span>/tmp/q2google<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span>--log-level<span class="w">  </span>DEBUG
+<h3 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Local CLI use or single-machine deployments.</li>
+<li>No external service dependency.</li>
+<li>Human-readable checkpoints (plain JSON files, easy to inspect or delete).</li>
+</ul>
+<hr />
+<h2 id="mongodb-backend">MongoDB backend<a class="headerlink" href="#mongodb-backend" title="Permanent link">&para;</a></h2>
+<p>Requires <code>pymongo</code>.  Each session is distributed across three collections that mirror
+the filesystem layout, enabling per-collection queries and clear visibility into
+what is running.</p>
+<h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">pip</label><label for="__tabbed_1_2">uv</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>q2google<span class="o">[</span>mongo<span class="o">]</span>
 </span></code></pre></div>
-<h2 id="environment-variable-precedence">Environment variable precedence<a class="headerlink" href="#environment-variable-precedence" title="Permanent link">&para;</a></h2>
-<p>All options can be set via environment variables with the <code>Q2GOOGLE_</code> prefix. The GoPro token also accepts <code>GP_ACCESS_TOKEN</code> or <code>Q2GOOGLE_GOPRO_ACCESS_TOKEN</code> (see <a href="../configuration/">Configuration</a>). CLI flags always override environment variables.</p>
-<p>q2google also reads a <code>.env</code> file from the working directory via <code>pydantic-settings</code>. See <a href="../configuration/">Configuration</a> for the full reference.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>add<span class="w"> </span>q2google<span class="o">[</span>mongo<span class="o">]</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="configuration_1">Configuration<a class="headerlink" href="#configuration_1" title="Permanent link">&para;</a></h3>
+<p>Set <code>Q2GOOGLE_STATE_URI</code> to a MongoDB connection string.  The database name is taken
+from the URI path component; it defaults to <code>q2google</code> when absent.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Q2GOOGLE_STATE_URI=mongodb://localhost:27017/q2google
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Q2GOOGLE_STATE_URI</code></td>
+<td><code>mongodb://host:27017/dbname</code></td>
+<td>Activates MongoBackend; <code>mongodb+srv://</code> is also supported.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="collection-schema">Collection schema<a class="headerlink" href="#collection-schema" title="Permanent link">&para;</a></h3>
+<p><strong><code>sessions</code></strong> — one document per session</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>string</td>
+<td>Unique session key (index).</td>
+</tr>
+<tr>
+<td><code>schema_version</code></td>
+<td>int</td>
+<td>Document format version.</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>string</td>
+<td>ISO 8601 creation timestamp.</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>string</td>
+<td>ISO 8601 last-updated timestamp.</td>
+</tr>
+<tr>
+<td><code>start_date_iso</code></td>
+<td>string</td>
+<td>Capture window start.</td>
+</tr>
+<tr>
+<td><code>end_date_iso</code></td>
+<td>string</td>
+<td>Capture window end.</td>
+</tr>
+<tr>
+<td><code>batch_size</code></td>
+<td>int</td>
+<td>Transfer batch size chosen at session creation.</td>
+</tr>
+<tr>
+<td><code>stages</code></td>
+<td>object</td>
+<td>Map of stage key → status (<code>pending</code>/<code>running</code>/<code>completed</code>/<code>failed</code>).</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>items</code></strong> — one document per <code>(session_id, file_name)</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>string</td>
+<td>Parent session key (compound index with <code>file_name</code>).</td>
+</tr>
+<tr>
+<td><code>file_name</code></td>
+<td>string</td>
+<td>GoPro logical filename.</td>
+</tr>
+<tr>
+<td><code>media_id</code></td>
+<td>string | null</td>
+<td>Remote media identifier once known.</td>
+</tr>
+<tr>
+<td><code>download_url</code></td>
+<td>string | null</td>
+<td>Resolved CDN URL after discovery.</td>
+</tr>
+<tr>
+<td><code>discovery_status</code></td>
+<td>string</td>
+<td><code>pending</code> / <code>running</code> / <code>completed</code> / <code>failed</code>.</td>
+</tr>
+<tr>
+<td><code>transfer_status</code></td>
+<td>string</td>
+<td><code>pending</code> / <code>running</code> / <code>completed</code> / <code>failed</code>.</td>
+</tr>
+<tr>
+<td><code>create_status</code></td>
+<td>string</td>
+<td><code>pending</code> / <code>running</code> / <code>completed</code> / <code>failed</code> / <code>skipped</code>.</td>
+</tr>
+<tr>
+<td><code>upload_token</code></td>
+<td>string | null</td>
+<td>Resumable upload token before library registration.</td>
+</tr>
+<tr>
+<td><code>errors</code></td>
+<td>object</td>
+<td>Map of stage key → last <code>ErrorRecord</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>batches</code></strong> — one document per <code>(session_id, batch_index)</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_id</code></td>
+<td>string</td>
+<td>Parent session key (compound index with <code>batch_index</code>).</td>
+</tr>
+<tr>
+<td><code>batch_index</code></td>
+<td>int</td>
+<td>Zero-based index among create batches.</td>
+</tr>
+<tr>
+<td><code>file_names</code></td>
+<td>array</td>
+<td>Filenames included in this batch.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>string</td>
+<td><code>pending</code> / <code>running</code> / <code>completed</code> / <code>failed</code>.</td>
+</tr>
+<tr>
+<td><code>responses_json</code></td>
+<td>array | null</td>
+<td>Per-response JSON strings after success.</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>object | null</td>
+<td>Populated when the batch fails as a whole.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="when-to-use_1">When to use<a class="headerlink" href="#when-to-use_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Multi-machine or container deployments where a shared filesystem is unavailable.</li>
+<li>Observability — query individual collections to see item or batch progress without
+  reading the full session document.</li>
+<li>When you need indexing, TTL expiry, or aggregation on session data.</li>
+</ul>
+<hr />
+<h2 id="custom-backend">Custom backend<a class="headerlink" href="#custom-backend" title="Permanent link">&para;</a></h2>
+<p>Implement <code>SyncStateBackend</code> to integrate any storage layer:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">q2google</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionState</span><span class="p">,</span> <span class="n">SyncStateBackend</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">RedisBackend</span><span class="p">:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_r</span> <span class="o">=</span> <span class="n">client</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="k">return</span> <span class="n">SessionState</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">raw</span><span class="p">))</span> <span class="k">if</span> <span class="n">raw</span> <span class="k">else</span> <span class="kc">None</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">SessionState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()))</span>
+</span></code></pre></div>
+<p>Pass it directly to <code>GoProToPhotosSync</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">syncer</span> <span class="o">=</span> <span class="n">GoProToPhotosSync</span><span class="p">(</span><span class="n">gopro</span><span class="o">=</span><span class="n">gopro</span><span class="p">,</span> <span class="n">photos</span><span class="o">=</span><span class="n">photos</span><span class="p">,</span> <span class="n">state_backend</span><span class="o">=</span><span class="n">RedisBackend</span><span class="p">(</span><span class="n">redis_client</span><span class="p">))</span>
+</span></code></pre></div>
+<p><code>SessionState.to_dict()</code> / <code>from_dict()</code> produce a plain dict suitable for any
+document or key-value store.  No changes to the sync pipeline are required.</p>
 
 
 
