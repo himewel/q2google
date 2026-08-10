@@ -8,14 +8,19 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Self
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from q2google.state.base import MediaType
 
 #: Maximum ``newMediaItems`` per ``mediaItems:batchCreate`` request (Google Photos Library API).
 PHOTOS_LIBRARY_BATCH_MAX = 50
 
 _DEFAULT_DOWNLOAD_CHUNK_BYTES = 1024 * 1024
+_DEFAULT_SYNC_PHOTO_BATCH_SIZE = 50
+_DEFAULT_SYNC_VIDEO_BATCH_SIZE = 10
 
 
 class Q2GoogleSettings(BaseSettings):
@@ -35,7 +40,10 @@ class Q2GoogleSettings(BaseSettings):
         gopro_prefer_height: Preferred pixel height when resolving GoPro CDN assets.
         google_photos_timeout_seconds: Total timeout per Library API HTTP request.
         chunk_granularity_multiplier: Multiplier for resumable upload chunk size vs API granularity.
-        sync_batch_size: Number of files per transfer batch for new sessions.
+        sync_batch_size: Legacy transfer batch size. When set (env/kwargs) without photo/video
+            overrides, both :attr:`sync_photo_batch_size` and :attr:`sync_video_batch_size` inherit it.
+        sync_photo_batch_size: Transfer batch size for photo items.
+        sync_video_batch_size: Transfer batch size for video items (typically smaller).
         photos_library_batch_size: Number of items per ``batchCreate`` call (at most 50).
         fail_fast: Whether to stop the pipeline after the first persisted error.
         download_chunk_size_bytes: Read/write chunk size for CDN streaming downloads.
@@ -101,9 +109,22 @@ class Q2GoogleSettings(BaseSettings):
     )
 
     sync_batch_size: int = Field(
-        default=50,
+        default=_DEFAULT_SYNC_PHOTO_BATCH_SIZE,
         ge=1,
-        description="Files per download/upload cycle for new sessions (transfer stage).",
+        description=(
+            "Legacy files-per-batch size. When explicitly set without photo/video sizes, "
+            "both media types inherit this value."
+        ),
+    )
+    sync_photo_batch_size: int = Field(
+        default=_DEFAULT_SYNC_PHOTO_BATCH_SIZE,
+        ge=1,
+        description="Files per download/upload cycle for photo items (transfer stage).",
+    )
+    sync_video_batch_size: int = Field(
+        default=_DEFAULT_SYNC_VIDEO_BATCH_SIZE,
+        ge=1,
+        description="Files per download/upload cycle for video items (transfer stage).",
     )
     photos_library_batch_size: int = Field(
         default=PHOTOS_LIBRARY_BATCH_MAX,
@@ -132,6 +153,36 @@ class Q2GoogleSettings(BaseSettings):
     )
 
     log_level: str = Field(default="INFO", description="Logging level name (DEBUG, INFO, …).")
+
+    @model_validator(mode="after")
+    def _apply_legacy_sync_batch_size(self) -> Self:
+        """Copy legacy ``sync_batch_size`` onto photo/video sizes when they were not set."""
+        fields_set = self.model_fields_set
+        if "sync_batch_size" not in fields_set:
+            return self
+        if "sync_photo_batch_size" not in fields_set:
+            self.sync_photo_batch_size = self.sync_batch_size
+        if "sync_video_batch_size" not in fields_set:
+            self.sync_video_batch_size = self.sync_batch_size
+        return self
+
+    def batch_size_for(self, media_type: MediaType) -> int:
+        """Return the transfer batch size configured for ``media_type``.
+
+        Args:
+            media_type: ``photo`` or ``video``.
+
+        Returns:
+            :attr:`sync_photo_batch_size` or :attr:`sync_video_batch_size`.
+
+        Raises:
+            ValueError: When ``media_type`` is not ``photo`` or ``video``.
+        """
+        if media_type == "photo":
+            return self.sync_photo_batch_size
+        if media_type == "video":
+            return self.sync_video_batch_size
+        raise ValueError(f"Unsupported media_type: {media_type!r}")
 
 
 @lru_cache

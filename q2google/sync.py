@@ -103,13 +103,25 @@ class GoProToPhotosSync:
         """Run discovery → transfer → create for ``session_id``.
 
         Uses ``state_backend`` for checkpoints. When persisted state already exists, caller-supplied
-        ``start_date``, ``end_date``, and ``batch_size`` are ignored in favor of the stored session.
+        ``start_date`` and ``end_date`` are ignored in favor of the stored session.
+
+        Transfer batching is resolved per run (not frozen from ``SessionState.batch_size``):
+
+        - explicit ``batch_size`` overrides both photo and video sizes for this run
+        - otherwise uses ``settings.batch_size_for(\"photo\"|\"video\")``
+        - on resume without an override, the persisted ``SessionState.batch_size`` is used for
+          **both** media types (pre-0.0.3 resume contract)
+
+        ``SessionState.batch_size`` is still written for new sessions (photo size, or the explicit
+        override) for compatibility and reporting.
 
         Args:
             start_date: Capture window start (new sessions only).
             end_date: Capture window end (new sessions only).
             session_id: Stable document key for load/resume.
-            batch_size: Transfer batch size for new sessions; ``None`` uses ``settings.sync_batch_size``.
+            batch_size: When set, overrides both photo and video transfer batch sizes for this run
+                (and is stored on new sessions). When ``None``, new sessions use
+                ``settings.batch_size_for``; resumed sessions use the stored ``batch_size``.
             fail_fast: When not ``None``, overrides ``settings.fail_fast``.
             on_stage_start: Optional async hook invoked immediately before each stage begins.
             on_stage_complete: Optional async hook invoked after each stage finishes (including on
@@ -121,20 +133,34 @@ class GoProToPhotosSync:
         Returns:
             Flattened list of batch-create responses from this invocation, in batch order.
         """
-        effective_batch = self.settings.sync_batch_size if batch_size is None else batch_size
         effective_fail_fast = self.settings.fail_fast if fail_fast is None else fail_fast
 
         loaded = await asyncio.to_thread(self.state_backend.load, session_id)
         if loaded is None:
+            if batch_size is None:
+                photo_batch = self.settings.batch_size_for("photo")
+                video_batch = self.settings.batch_size_for("video")
+                session_batch = photo_batch
+            else:
+                photo_batch = batch_size
+                video_batch = batch_size
+                session_batch = batch_size
             state = new_session(
                 session_id,
                 start_date_iso=start_date.isoformat(),
                 end_date_iso=end_date.isoformat(),
-                batch_size=effective_batch,
+                batch_size=session_batch,
             )
             await self._persist_state(state)
         else:
             state = loaded
+            if batch_size is None:
+                # Preserve pre-0.0.3 resume: persisted session batch size drives transfer.
+                photo_batch = state.batch_size
+                video_batch = state.batch_size
+            else:
+                photo_batch = batch_size
+                video_batch = batch_size
 
         all_responses: list[MediaItemBatchCreateResponse] = []
 
@@ -151,7 +177,8 @@ class GoProToPhotosSync:
                 await on_stage_start("transfer")
             await self._transfer.run(
                 state,
-                batch_size=state.batch_size,
+                photo_batch_size=photo_batch,
+                video_batch_size=video_batch,
                 fail_fast=effective_fail_fast,
                 metrics=transfer_metrics,
             )

@@ -19,6 +19,14 @@ def test_save_load_roundtrip(backend) -> None:
         download_url="https://example.invalid/a.mp4",
         discovery_status="completed",
         transfer_status="pending",
+        media_type="video",
+    )
+    state.items["b.jpg"] = ItemState(
+        file_name="b.jpg",
+        download_url="https://example.invalid/b.jpg",
+        discovery_status="completed",
+        transfer_status="pending",
+        media_type="photo",
     )
     backend.save(state)
 
@@ -28,6 +36,8 @@ def test_save_load_roundtrip(backend) -> None:
     assert loaded.items["a.mp4"].download_url == "https://example.invalid/a.mp4"
     assert loaded.items["a.mp4"].discovery_status == "completed"
     assert loaded.items["a.mp4"].transfer_status == "pending"
+    assert loaded.items["a.mp4"].media_type == "video"
+    assert loaded.items["b.jpg"].media_type == "photo"
 
 
 def test_load_missing_session_returns_none(backend) -> None:

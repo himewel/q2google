@@ -110,7 +110,7 @@ Q2GOOGLE_STATE_URI=mongodb://localhost:27017/q2google
 | `updated_at` | string | ISO 8601 last-updated timestamp. |
 | `start_date_iso` | string | Capture window start. |
 | `end_date_iso` | string | Capture window end. |
-| `batch_size` | int | Transfer batch size chosen at session creation. |
+| `batch_size` | int | Transfer batch size recorded at session creation (photo size, or a CLI override). On resume without a new override, this value is used for both media types. |
 | `stages` | object | Map of stage key → status (`pending`/`running`/`completed`/`failed`). |
 
 **`items`** — one document per `(session_id, file_name)`
@@ -119,6 +119,7 @@ Q2GOOGLE_STATE_URI=mongodb://localhost:27017/q2google
 |-------|------|-------------|
 | `session_id` | string | Parent session key (compound index with `file_name`). |
 | `file_name` | string | GoPro logical filename. |
+| `media_type` | string | ``photo`` or ``video`` (inferred from ``file_name`` when absent). |
 | `media_id` | string \| null | Remote media identifier once known. |
 | `download_url` | string \| null | Resolved CDN URL after discovery. |
 | `discovery_status` | string | `pending` / `running` / `completed` / `failed`. |

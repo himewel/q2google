@@ -8,11 +8,42 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Literal, Protocol, TypedDict
 
 StageKey = Literal["discovery", "transfer", "create"]
 StageStatus = Literal["pending", "running", "completed", "failed"]
 ItemCreateStatus = Literal["pending", "running", "completed", "failed", "skipped"]
+MediaType = Literal["photo", "video"]
+
+#: Filename suffixes treated as video when inferring :attr:`ItemState.media_type`.
+_VIDEO_SUFFIXES = frozenset(
+    {
+        ".mp4",
+        ".mov",
+        ".m4v",
+        ".avi",
+        ".mkv",
+        ".webm",
+        ".lrv",
+        ".360",
+    }
+)
+
+
+def media_type_for_filename(file_name: str) -> MediaType:
+    """Infer ``photo`` vs ``video`` from a GoPro logical filename.
+
+    Args:
+        file_name: Filename or path whose suffix is inspected (case-insensitive).
+
+    Returns:
+        ``\"video\"`` for known video extensions; otherwise ``\"photo\"``.
+    """
+    suffix = Path(file_name).suffix.lower()
+    if suffix in _VIDEO_SUFFIXES:
+        return "video"
+    return "photo"
 
 
 class ErrorRecord(TypedDict, total=False):
@@ -48,6 +79,7 @@ class ItemState:
         transfer_status: Lifecycle state for download + upload to Google.
         create_status: Lifecycle state for ``batchCreate``.
         upload_token: Finalized resumable upload token before library registration.
+        media_type: ``photo`` or ``video``, derived from ``file_name`` when omitted.
         errors: Map of stage key (e.g. ``\"transfer\"``) to last :class:`ErrorRecord`.
     """
 
@@ -58,7 +90,13 @@ class ItemState:
     transfer_status: StageStatus = "pending"
     create_status: ItemCreateStatus = "pending"
     upload_token: str | None = None
+    media_type: MediaType = field(default=None)  # type: ignore[assignment]
     errors: dict[str, ErrorRecord] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Derive :attr:`media_type` from :attr:`file_name` when not provided."""
+        if self.media_type is None:
+            self.media_type = media_type_for_filename(self.file_name)
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize this item to a plain dict suitable for JSON.
@@ -74,6 +112,7 @@ class ItemState:
             "transfer_status": self.transfer_status,
             "create_status": self.create_status,
             "upload_token": self.upload_token,
+            "media_type": self.media_type,
             "errors": dict(self.errors),
         }
 
@@ -86,15 +125,26 @@ class ItemState:
 
         Returns:
             Reconstructed :class:`ItemState`.
+
+        Notes:
+            Legacy documents without ``media_type`` infer it from ``file_name``.
         """
+        file_name = str(data["file_name"])
+        raw_media_type = data.get("media_type")
+        media_type: MediaType | None
+        if raw_media_type in ("photo", "video"):
+            media_type = raw_media_type
+        else:
+            media_type = media_type_for_filename(file_name)
         return cls(
-            file_name=str(data["file_name"]),
+            file_name=file_name,
             media_id=data.get("media_id"),
             download_url=data.get("download_url"),
             discovery_status=data.get("discovery_status", "pending"),  # type: ignore[arg-type]
             transfer_status=data.get("transfer_status", "pending"),  # type: ignore[arg-type]
             create_status=data.get("create_status", "pending"),  # type: ignore[arg-type]
             upload_token=data.get("upload_token"),
+            media_type=media_type,
             errors=dict(data.get("errors") or {}),
         )
 
@@ -291,9 +341,11 @@ __all__ = [
     "ErrorRecord",
     "ItemCreateStatus",
     "ItemState",
+    "MediaType",
     "SessionState",
     "StageKey",
     "StageStatus",
     "SyncStateBackend",
+    "media_type_for_filename",
     "new_session",
 ]

@@ -9,7 +9,7 @@ from datetime import datetime
 
 from gopro_api import AsyncGoProClient
 
-from q2google.state.base import ItemState, SessionState
+from q2google.state.base import ItemState, SessionState, media_type_for_filename
 
 PersistFn = Callable[[SessionState], Awaitable[None]]
 
@@ -52,10 +52,8 @@ class DiscoveryStage:
             logging.info("Resolving download URLs (discovery)")
             media_files = await self.gopro.get_download_url(media_items)
             for file_name, asset in media_files.items():
-                item = state.items.setdefault(
-                    file_name,
-                    ItemState(file_name=file_name),
-                )
+                item = state.items.setdefault(file_name, ItemState(file_name=file_name))
+                item.media_type = media_type_for_filename(file_name)
                 item.download_url = asset.url
                 item.discovery_status = "completed"
             state.stages["discovery"] = "completed"
