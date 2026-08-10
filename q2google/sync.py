@@ -109,7 +109,9 @@ class GoProToPhotosSync:
             start_date: Capture window start (new sessions only).
             end_date: Capture window end (new sessions only).
             session_id: Stable document key for load/resume.
-            batch_size: Transfer batch size for new sessions; ``None`` uses ``settings.sync_batch_size``.
+            batch_size: When set, overrides both photo and video transfer batch sizes for this run
+                (and is stored on new sessions). When ``None``, uses
+                ``settings.batch_size_for(\"photo\"|\"video\")``.
             fail_fast: When not ``None``, overrides ``settings.fail_fast``.
             on_stage_start: Optional async hook invoked immediately before each stage begins.
             on_stage_complete: Optional async hook invoked after each stage finishes (including on
@@ -121,7 +123,14 @@ class GoProToPhotosSync:
         Returns:
             Flattened list of batch-create responses from this invocation, in batch order.
         """
-        effective_batch = self.settings.sync_batch_size if batch_size is None else batch_size
+        if batch_size is None:
+            photo_batch = self.settings.batch_size_for("photo")
+            video_batch = self.settings.batch_size_for("video")
+            session_batch = photo_batch
+        else:
+            photo_batch = batch_size
+            video_batch = batch_size
+            session_batch = batch_size
         effective_fail_fast = self.settings.fail_fast if fail_fast is None else fail_fast
 
         loaded = await asyncio.to_thread(self.state_backend.load, session_id)
@@ -130,7 +139,7 @@ class GoProToPhotosSync:
                 session_id,
                 start_date_iso=start_date.isoformat(),
                 end_date_iso=end_date.isoformat(),
-                batch_size=effective_batch,
+                batch_size=session_batch,
             )
             await self._persist_state(state)
         else:
@@ -151,7 +160,8 @@ class GoProToPhotosSync:
                 await on_stage_start("transfer")
             await self._transfer.run(
                 state,
-                batch_size=state.batch_size,
+                photo_batch_size=photo_batch,
+                video_batch_size=video_batch,
                 fail_fast=effective_fail_fast,
                 metrics=transfer_metrics,
             )

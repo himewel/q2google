@@ -30,7 +30,9 @@ q2google loads the GoPro token into `Q2GoogleSettings.gopro_access_token` and pa
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `Q2GOOGLE_SYNC_BATCH_SIZE` | `10` | Number of items per transfer cycle for **new** sessions. Ignored when resuming — the persisted value wins. |
+| `Q2GOOGLE_SYNC_PHOTO_BATCH_SIZE` | `50` | Number of **photo** items per transfer cycle. |
+| `Q2GOOGLE_SYNC_VIDEO_BATCH_SIZE` | `10` | Number of **video** items per transfer cycle (typically smaller than photos). |
+| `Q2GOOGLE_SYNC_BATCH_SIZE` | `50` | Legacy override: when passed via CLI/`batch_size`, applies to both media types for that run. |
 | `Q2GOOGLE_PHOTOS_LIBRARY_BATCH_SIZE` | `50` | Items per `batchCreate` call (1–50, Google Photos API limit). |
 | `Q2GOOGLE_DOWNLOAD_CHUNK_SIZE_BYTES` | `8388608` | CDN stream chunk size in bytes (default 8 MiB). |
 | `Q2GOOGLE_GOOGLE_PHOTOS_TIMEOUT_SECONDS` | `120` | Request timeout for Google Photos Library API calls. |
@@ -67,8 +69,11 @@ settings = get_settings()
 # Override specific values in tests or scripts
 settings = Q2GoogleSettings(
     credentials_path="path/to/client_secret.json",
-    sync_batch_size=5,
+    sync_photo_batch_size=20,
+    sync_video_batch_size=5,
 )
+assert settings.batch_size_for("photo") == 20
+assert settings.batch_size_for("video") == 5
 ```
 
 See [`q2google.config`](api/config.md) in the API reference for all fields and their defaults.

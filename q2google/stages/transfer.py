@@ -17,7 +17,7 @@ import aiohttp
 from q2google.metrics import SyncTransferMetrics
 from q2google.photos import GooglePhotosClient
 from q2google.stages.common import CdnAsset, batched, error_record
-from q2google.state.base import SessionState
+from q2google.state.base import MediaType, SessionState
 
 PersistFn = Callable[[SessionState], Awaitable[None]]
 
@@ -101,11 +101,17 @@ class TransferStage:
             path.unlink(missing_ok=True)
 
     @staticmethod
-    def pending_file_names(state: SessionState) -> list[str]:
+    def pending_file_names(
+        state: SessionState,
+        *,
+        media_type: MediaType | None = None,
+    ) -> list[str]:
         """Return sorted filenames needing download/upload based on discovery and transfer status.
 
         Args:
             state: Session containing partially completed items.
+            media_type: When set, only include items whose :attr:`~q2google.state.base.ItemState.media_type`
+                matches (``photo`` or ``video``).
 
         Returns:
             Filenames eligible for transfer retry (pending or failed transfer).
@@ -113,6 +119,8 @@ class TransferStage:
         out: list[str] = []
         for file_name, item in state.items.items():
             if item.discovery_status != "completed" or not item.download_url:
+                continue
+            if media_type is not None and item.media_type != media_type:
                 continue
             if item.transfer_status in ("pending", "failed"):
                 out.append(file_name)
@@ -123,23 +131,42 @@ class TransferStage:
         self,
         state: SessionState,
         *,
-        batch_size: int,
+        batch_size: int | None = None,
+        photo_batch_size: int | None = None,
+        video_batch_size: int | None = None,
         fail_fast: bool,
         metrics: SyncTransferMetrics | None = None,
     ) -> None:
-        """Process all pending transfers in batches of ``batch_size``.
+        """Process pending transfers, optionally with distinct photo/video batch sizes.
 
         Args:
             state: Mutable session updated with tokens and statuses.
-            batch_size: Number of files per concurrent download/upload cycle.
+            batch_size: When set, used for both photo and video batches (overrides per-type sizes).
+            photo_batch_size: Files per concurrent cycle for photo items; required when
+                ``batch_size`` is ``None``.
+            video_batch_size: Files per concurrent cycle for video items; required when
+                ``batch_size`` is ``None``.
             fail_fast: When ``True``, re-raise after persisting the first blocking error.
             metrics: Optional mutable aggregate for byte counts and phase timings.
 
         Raises:
+            ValueError: When neither ``batch_size`` nor both per-type sizes are provided.
             BaseException: Propagates upload or download failures when ``fail_fast`` is ``True``.
         """
-        pending = self.pending_file_names(state)
-        if not pending:
+        if batch_size is not None:
+            effective_photo_batch = batch_size
+            effective_video_batch = batch_size
+        elif photo_batch_size is not None and video_batch_size is not None:
+            effective_photo_batch = photo_batch_size
+            effective_video_batch = video_batch_size
+        else:
+            raise ValueError(
+                "Provide batch_size, or both photo_batch_size and video_batch_size",
+            )
+
+        pending_photos = self.pending_file_names(state, media_type="photo")
+        pending_videos = self.pending_file_names(state, media_type="video")
+        if not pending_photos and not pending_videos:
             state.stages["transfer"] = "completed"
             await self.persist(state)
             return
@@ -156,65 +183,79 @@ class TransferStage:
             with tempfile.TemporaryDirectory(prefix=self.temp_dir_prefix) as tmp:
                 tmp_path = Path(tmp)
                 async with aiohttp.ClientSession(timeout=download_timeout) as download_client:
-                    for batch_index, name_batch in enumerate(batched(pending, batch_size), start=1):
-                        logging.info(
-                            "Transfer batch %s: %s file(s)",
-                            batch_index,
-                            len(name_batch),
-                        )
-                        batch_assets: list[tuple[str, CdnAsset]] = []
-                        for fn in name_batch:
-                            it = state.items[fn]
-                            assert it.download_url is not None
-                            batch_assets.append((fn, SimpleNamespace(url=it.download_url)))
-                        try:
-                            t_dl = time.perf_counter()
-                            paths = await self._download_chunk(download_client, tmp_path, batch_assets)
-                            if metrics is not None:
-                                metrics.seconds_downloading += time.perf_counter() - t_dl
-                                for _, p in paths:
-                                    metrics.bytes_downloaded += p.stat().st_size
-                        except Exception as exc:
-                            for fn in name_batch:
-                                item = state.items[fn]
-                                item.transfer_status = "failed"
-                                item.errors["transfer"] = error_record(exc, 1)
-                                item.create_status = "skipped"
-                            await self.persist(state)
-                            if fail_fast:
-                                raise exc
+                    for media_type, pending, type_batch_size in (
+                        ("photo", pending_photos, effective_photo_batch),
+                        ("video", pending_videos, effective_video_batch),
+                    ):
+                        if not pending:
                             continue
-
-                        path_sizes = {p: p.stat().st_size for _, p in paths}
-                        t_ul = time.perf_counter()
-                        results = await asyncio.gather(
-                            *[self.photos.upload_file_path(fn, path) for fn, path in paths],
-                            return_exceptions=True,
-                        )
-                        if metrics is not None:
-                            metrics.seconds_uploading += time.perf_counter() - t_ul
-
-                        self._delete_chunk_files(paths)
-
-                        for (fn, path), res in zip(paths, results, strict=True):
-                            item = state.items[fn]
-                            if isinstance(res, BaseException):
-                                item.transfer_status = "failed"
-                                item.errors["transfer"] = error_record(res, 1)
-                                item.upload_token = None
-                                item.create_status = "skipped"
-                                logging.exception("Upload failed for %s", fn)
-                                if fail_fast:
-                                    await self.persist(state)
-                                    raise res
-                            else:
-                                item.transfer_status = "completed"
-                                item.upload_token = res.upload_token
-                                item.create_status = "pending"
-                                item.errors.pop("transfer", None)
+                        for batch_index, name_batch in enumerate(
+                            batched(pending, type_batch_size),
+                            start=1,
+                        ):
+                            logging.info(
+                                "Transfer %s batch %s: %s file(s)",
+                                media_type,
+                                batch_index,
+                                len(name_batch),
+                            )
+                            batch_assets: list[tuple[str, CdnAsset]] = []
+                            for fn in name_batch:
+                                it = state.items[fn]
+                                assert it.download_url is not None
+                                batch_assets.append((fn, SimpleNamespace(url=it.download_url)))
+                            try:
+                                t_dl = time.perf_counter()
+                                paths = await self._download_chunk(
+                                    download_client,
+                                    tmp_path,
+                                    batch_assets,
+                                )
                                 if metrics is not None:
-                                    metrics.bytes_uploaded += path_sizes[path]
-                        await self.persist(state)
+                                    metrics.seconds_downloading += time.perf_counter() - t_dl
+                                    for _, p in paths:
+                                        metrics.bytes_downloaded += p.stat().st_size
+                            except Exception as exc:
+                                for fn in name_batch:
+                                    item = state.items[fn]
+                                    item.transfer_status = "failed"
+                                    item.errors["transfer"] = error_record(exc, 1)
+                                    item.create_status = "skipped"
+                                await self.persist(state)
+                                if fail_fast:
+                                    raise exc
+                                continue
+
+                            path_sizes = {p: p.stat().st_size for _, p in paths}
+                            t_ul = time.perf_counter()
+                            results = await asyncio.gather(
+                                *[self.photos.upload_file_path(fn, path) for fn, path in paths],
+                                return_exceptions=True,
+                            )
+                            if metrics is not None:
+                                metrics.seconds_uploading += time.perf_counter() - t_ul
+
+                            self._delete_chunk_files(paths)
+
+                            for (fn, path), res in zip(paths, results, strict=True):
+                                item = state.items[fn]
+                                if isinstance(res, BaseException):
+                                    item.transfer_status = "failed"
+                                    item.errors["transfer"] = error_record(res, 1)
+                                    item.upload_token = None
+                                    item.create_status = "skipped"
+                                    logging.exception("Upload failed for %s", fn)
+                                    if fail_fast:
+                                        await self.persist(state)
+                                        raise res
+                                else:
+                                    item.transfer_status = "completed"
+                                    item.upload_token = res.upload_token
+                                    item.create_status = "pending"
+                                    item.errors.pop("transfer", None)
+                                    if metrics is not None:
+                                        metrics.bytes_uploaded += path_sizes[path]
+                            await self.persist(state)
 
             state.stages["transfer"] = "completed"
             await self.persist(state)

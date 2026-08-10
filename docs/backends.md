@@ -119,6 +119,7 @@ Q2GOOGLE_STATE_URI=mongodb://localhost:27017/q2google
 |-------|------|-------------|
 | `session_id` | string | Parent session key (compound index with `file_name`). |
 | `file_name` | string | GoPro logical filename. |
+| `media_type` | string | ``photo`` or ``video`` (inferred from ``file_name`` when absent). |
 | `media_id` | string \| null | Remote media identifier once known. |
 | `download_url` | string \| null | Resolved CDN URL after discovery. |
 | `discovery_status` | string | `pending` / `running` / `completed` / `failed`. |

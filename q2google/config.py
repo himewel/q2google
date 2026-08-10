@@ -12,10 +12,14 @@ from pathlib import Path
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from q2google.state.base import MediaType
+
 #: Maximum ``newMediaItems`` per ``mediaItems:batchCreate`` request (Google Photos Library API).
 PHOTOS_LIBRARY_BATCH_MAX = 50
 
 _DEFAULT_DOWNLOAD_CHUNK_BYTES = 1024 * 1024
+_DEFAULT_SYNC_PHOTO_BATCH_SIZE = 50
+_DEFAULT_SYNC_VIDEO_BATCH_SIZE = 10
 
 
 class Q2GoogleSettings(BaseSettings):
@@ -35,7 +39,10 @@ class Q2GoogleSettings(BaseSettings):
         gopro_prefer_height: Preferred pixel height when resolving GoPro CDN assets.
         google_photos_timeout_seconds: Total timeout per Library API HTTP request.
         chunk_granularity_multiplier: Multiplier for resumable upload chunk size vs API granularity.
-        sync_batch_size: Number of files per transfer batch for new sessions.
+        sync_batch_size: Legacy default transfer batch size for new sessions (also seeds
+            photo/video defaults when those env vars are unset in older configs).
+        sync_photo_batch_size: Transfer batch size for photo items.
+        sync_video_batch_size: Transfer batch size for video items (typically smaller).
         photos_library_batch_size: Number of items per ``batchCreate`` call (at most 50).
         fail_fast: Whether to stop the pipeline after the first persisted error.
         download_chunk_size_bytes: Read/write chunk size for CDN streaming downloads.
@@ -101,9 +108,19 @@ class Q2GoogleSettings(BaseSettings):
     )
 
     sync_batch_size: int = Field(
-        default=50,
+        default=_DEFAULT_SYNC_PHOTO_BATCH_SIZE,
         ge=1,
-        description="Files per download/upload cycle for new sessions (transfer stage).",
+        description="Legacy files-per-batch default for new sessions; prefer photo/video sizes.",
+    )
+    sync_photo_batch_size: int = Field(
+        default=_DEFAULT_SYNC_PHOTO_BATCH_SIZE,
+        ge=1,
+        description="Files per download/upload cycle for photo items (transfer stage).",
+    )
+    sync_video_batch_size: int = Field(
+        default=_DEFAULT_SYNC_VIDEO_BATCH_SIZE,
+        ge=1,
+        description="Files per download/upload cycle for video items (transfer stage).",
     )
     photos_library_batch_size: int = Field(
         default=PHOTOS_LIBRARY_BATCH_MAX,
@@ -111,6 +128,25 @@ class Q2GoogleSettings(BaseSettings):
         le=PHOTOS_LIBRARY_BATCH_MAX,
         description="Items per mediaItems:batchCreate request (max 50 per API).",
     )
+
+    def batch_size_for(self, media_type: MediaType) -> int:
+        """Return the transfer batch size configured for ``media_type``.
+
+        Args:
+            media_type: ``photo`` or ``video``.
+
+        Returns:
+            :attr:`sync_photo_batch_size` or :attr:`sync_video_batch_size`.
+
+        Raises:
+            ValueError: When ``media_type`` is not ``photo`` or ``video``.
+        """
+        if media_type == "photo":
+            return self.sync_photo_batch_size
+        if media_type == "video":
+            return self.sync_video_batch_size
+        raise ValueError(f"Unsupported media_type: {media_type!r}")
+
     fail_fast: bool = Field(
         default=False,
         description="Abort on first item/batch error after persisting failure state.",

@@ -17,10 +17,12 @@ from q2google.state.base import (
     ErrorRecord,
     ItemCreateStatus,
     ItemState,
+    MediaType,
     SessionState,
     StageKey,
     StageStatus,
     SyncStateBackend,
+    media_type_for_filename,
     new_session,
 )
 from q2google.state.local import JsonFileBackend
@@ -81,11 +83,13 @@ __all__ = [
     "ItemCreateStatus",
     "ItemState",
     "JsonFileBackend",
+    "MediaType",
     "MongoBackend",
     "SessionState",
     "StageKey",
     "StageStatus",
     "SyncStateBackend",
     "build_backend",
+    "media_type_for_filename",
     "new_session",
 ]
