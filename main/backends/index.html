@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1131,7 +1131,7 @@ from the URI path component; it defaults to <code>q2google</code> when absent.</
 <tr>
 <td><code>batch_size</code></td>
 <td>int</td>
-<td>Transfer batch size chosen at session creation.</td>
+<td>Transfer batch size recorded at session creation (photo size, or a CLI override). On resume without a new override, this value is used for both media types.</td>
 </tr>
 <tr>
 <td><code>stages</code></td>
@@ -1159,6 +1159,11 @@ from the URI path component; it defaults to <code>q2google</code> when absent.</
 <td><code>file_name</code></td>
 <td>string</td>
 <td>GoPro logical filename.</td>
+</tr>
+<tr>
+<td><code>media_type</code></td>
+<td>string</td>
+<td><code>photo</code> or <code>video</code> (inferred from <code>file_name</code> when absent).</td>
 </tr>
 <tr>
 <td><code>media_id</code></td>
@@ -1327,7 +1332,7 @@ document or key-value store.  No changes to the sync pipeline are required.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
