@@ -121,7 +121,7 @@ def sync_command(
     batch_size: int | None = typer.Option(
         None,
         "--batch-size",
-        help="Transfer batch size for new sessions; default from settings.",
+        help="Override photo/video transfer batch sizes for this run; default from settings or resumed session.",
     ),
     fail_fast: bool | None = typer.Option(
         None,
@@ -161,7 +161,8 @@ def sync_command(
         chunk_multiplier: Upload chunk multiplier; defaults from settings when omitted.
         max_items: GoPro listing cap; defaults from settings when omitted.
         prefer_height: Preferred asset height; defaults from settings when omitted.
-        batch_size: New-session transfer batch size; defaults from settings when omitted.
+        batch_size: Override photo/video transfer batch sizes for this run; defaults from
+            settings (new sessions) or the persisted session size (resume) when omitted.
         fail_fast: Overrides settings when ``True`` or ``False``; ``None`` uses settings.
         log_level: Explicit logging level; when omitted the CLI defaults to quiet (WARNING).
         verbose: When True and ``log_level`` is omitted, sets INFO for ``q2google`` loggers.

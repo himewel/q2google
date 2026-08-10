@@ -139,6 +139,9 @@ class TransferStage:
     ) -> None:
         """Process pending transfers, optionally with distinct photo/video batch sizes.
 
+        Pending photos are transferred first (in filename order), then pending videos.
+        Each media type uses its own batch size.
+
         Args:
             state: Mutable session updated with tokens and statuses.
             batch_size: When set, used for both photo and video batches (overrides per-type sizes).

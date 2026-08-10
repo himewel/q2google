@@ -53,7 +53,8 @@ async def _run_sync(
             :class:`~q2google.photos.GooglePhotosClient`.
         max_items: Maximum media items listed from GoPro cloud.
         prefer_height: Preferred download height for GoPro assets.
-        batch_size: Transfer batch size for new sessions; ``None`` uses ``cfg.sync_batch_size``.
+        batch_size: Override both photo/video transfer batch sizes for this run; ``None`` uses
+            ``cfg.batch_size_for`` for new sessions and the persisted session size on resume.
         fail_fast: Whether to abort on first error; ``None`` uses ``cfg.fail_fast``.
         printer: Rich console renderer used to report stage completions.
 

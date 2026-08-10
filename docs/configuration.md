@@ -30,9 +30,9 @@ q2google loads the GoPro token into `Q2GoogleSettings.gopro_access_token` and pa
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `Q2GOOGLE_SYNC_PHOTO_BATCH_SIZE` | `50` | Number of **photo** items per transfer cycle. |
-| `Q2GOOGLE_SYNC_VIDEO_BATCH_SIZE` | `10` | Number of **video** items per transfer cycle (typically smaller than photos). |
-| `Q2GOOGLE_SYNC_BATCH_SIZE` | `50` | Legacy override: when passed via CLI/`batch_size`, applies to both media types for that run. |
+| `Q2GOOGLE_SYNC_PHOTO_BATCH_SIZE` | `50` | Number of **photo** items per transfer cycle (new sessions). |
+| `Q2GOOGLE_SYNC_VIDEO_BATCH_SIZE` | `10` | Number of **video** items per transfer cycle (new sessions; typically smaller than photos). |
+| `Q2GOOGLE_SYNC_BATCH_SIZE` | `50` | Legacy: when set without the photo/video vars above, both media types inherit this size. |
 | `Q2GOOGLE_PHOTOS_LIBRARY_BATCH_SIZE` | `50` | Items per `batchCreate` call (1–50, Google Photos API limit). |
 | `Q2GOOGLE_DOWNLOAD_CHUNK_SIZE_BYTES` | `8388608` | CDN stream chunk size in bytes (default 8 MiB). |
 | `Q2GOOGLE_GOOGLE_PHOTOS_TIMEOUT_SECONDS` | `120` | Request timeout for Google Photos Library API calls. |
